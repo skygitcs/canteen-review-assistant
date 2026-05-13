@@ -1,0 +1,107 @@
+package edu.thu.canteen.service;
+
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import edu.thu.canteen.domain.entity.*;
+import edu.thu.canteen.domain.mapper.*;
+import edu.thu.canteen.dto.DishDtos;
+import edu.thu.canteen.dto.ReviewDtos;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+
+@Service
+public class DishViewService {
+    private final DishMapper dishMapper;
+    private final CanteenMapper canteenMapper;
+    private final CanteenWindowMapper windowMapper;
+    private final DishTagMapper dishTagMapper;
+    private final ReviewMapper reviewMapper;
+    private final ReviewVoteMapper voteMapper;
+    private final FavoriteMapper favoriteMapper;
+    private final UserMapper userMapper;
+
+    public DishViewService(DishMapper dishMapper, CanteenMapper canteenMapper, CanteenWindowMapper windowMapper,
+                           DishTagMapper dishTagMapper, ReviewMapper reviewMapper, ReviewVoteMapper voteMapper,
+                           FavoriteMapper favoriteMapper, UserMapper userMapper) {
+        this.dishMapper = dishMapper;
+        this.canteenMapper = canteenMapper;
+        this.windowMapper = windowMapper;
+        this.dishTagMapper = dishTagMapper;
+        this.reviewMapper = reviewMapper;
+        this.voteMapper = voteMapper;
+        this.favoriteMapper = favoriteMapper;
+        this.userMapper = userMapper;
+    }
+
+    public DishDtos.DishCard card(Dish dish) {
+        Canteen canteen = canteenMapper.selectById(dish.getCanteenId());
+        CanteenWindow window = dish.getWindowId() == null ? null : windowMapper.selectById(dish.getWindowId());
+        List<String> tags = dishTagMapper.selectList(Wrappers.<DishTag>lambdaQuery().eq(DishTag::getDishId, dish.getId()))
+                .stream().map(DishTag::getTag).toList();
+        List<Review> reviews = approvedReviews(dish.getId());
+        double avg = reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
+        Long favorites = favoriteMapper.selectCount(Wrappers.<Favorite>lambdaQuery().eq(Favorite::getDishId, dish.getId()));
+        return new DishDtos.DishCard(
+                dish.getId(),
+                dish.getCanteenId(),
+                canteen == null ? null : canteen.getName(),
+                dish.getWindowId(),
+                window == null ? null : window.getName(),
+                window == null ? null : window.getFloorNo(),
+                dish.getName(),
+                dish.getImageUrl(),
+                dish.getPrice(),
+                dish.getDescription(),
+                dish.getSpiceLevel(),
+                tags,
+                round(avg),
+                (long) reviews.size(),
+                favorites
+        );
+    }
+
+    public List<ReviewDtos.ReviewView> reviewViews(Long dishId) {
+        return approvedReviews(dishId).stream()
+                .sorted(Comparator.comparing(Review::getCreatedAt).reversed())
+                .map(this::reviewView)
+                .toList();
+    }
+
+    public ReviewDtos.ReviewView reviewView(Review review) {
+        User user = userMapper.selectById(review.getUserId());
+        Long up = voteMapper.selectCount(Wrappers.<ReviewVote>lambdaQuery()
+                .eq(ReviewVote::getReviewId, review.getId()).eq(ReviewVote::getVote, 1));
+        Long down = voteMapper.selectCount(Wrappers.<ReviewVote>lambdaQuery()
+                .eq(ReviewVote::getReviewId, review.getId()).eq(ReviewVote::getVote, -1));
+        return new ReviewDtos.ReviewView(
+                review.getId(),
+                review.getDishId(),
+                review.getUserId(),
+                user == null ? "unknown" : user.getNickname(),
+                review.getRating(),
+                review.getContent(),
+                review.getImageUrl(),
+                up,
+                down,
+                review.getCreatedAt()
+        );
+    }
+
+    public double weightedScore(DishDtos.DishCard card) {
+        return card.avgRating() * 10 + card.favoriteCount() * 1.5 + card.reviewCount();
+    }
+
+    private List<Review> approvedReviews(Long dishId) {
+        return reviewMapper.selectList(Wrappers.<Review>lambdaQuery()
+                .eq(Review::getDishId, dishId)
+                .eq(Review::getStatus, "APPROVED"));
+    }
+
+    private Double round(double value) {
+        return BigDecimal.valueOf(value).setScale(1, RoundingMode.HALF_UP).doubleValue();
+    }
+}

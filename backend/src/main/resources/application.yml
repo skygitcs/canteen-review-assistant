@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: thu-canteen-backend
+  datasource:
+    url: jdbc:mysql://localhost:3306/thu_canteen?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    time-zone: Asia/Shanghai
+    date-format: yyyy-MM-dd HH:mm:ss
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+
+app:
+  jwt:
+    # Change this before deployment. It must be at least 32 bytes for HS256.
+    secret: thu-canteen-dev-secret-change-me-2026-very-long
+    expiration-minutes: 10080
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
