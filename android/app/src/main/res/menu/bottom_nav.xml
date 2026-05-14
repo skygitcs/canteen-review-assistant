@@ -2,15 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_home"
-        android:title="Home"
-        android:icon="@android:drawable/ic_menu_view" />
-    <item
-        android:id="@+id/menu_map"
-        android:title="Food Map"
-        android:icon="@android:drawable/ic_menu_mapmode" />
+        android:title="&#x9996;&#x9875;"
+        android:icon="@drawable/ic_home" />
     <item
         android:id="@+id/menu_profile"
-        android:title="Profile"
-        android:icon="@android:drawable/ic_menu_myplaces" />
+        android:title="&#x6211;&#x7684;"
+        android:icon="@drawable/ic_person" />
 </menu>
-

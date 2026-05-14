@@ -33,10 +33,15 @@ public class DishDetailActivity extends AppCompatActivity {
         TextView description = findViewById(R.id.dish_description);
         ChipGroup tags = findViewById(R.id.dish_tags);
 
-        Glide.with(this).load(dish.imageUrl).into(cover);
+        if (dish.imageUrl == null || dish.imageUrl.isEmpty()) {
+            cover.setImageDrawable(null);
+            cover.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(this).load(dish.imageUrl).into(cover);
+        }
         name.setText(dish.name);
         canteen.setText(dish.canteenName);
-        price.setText(String.format("$%.2f", dish.price));
+        price.setText(String.format("\u00a5%.2f", dish.price));
         description.setText(dish.description);
         UiUtils.bindTags(tags, dish.tags);
 
@@ -46,7 +51,6 @@ public class DishDetailActivity extends AppCompatActivity {
         reviewList.setAdapter(new ReviewAdapter(reviews));
 
         Button writeReview = findViewById(R.id.write_review_button);
-        writeReview.setOnClickListener(v -> UiUtils.toast(this, "Write review"));
+        writeReview.setOnClickListener(v -> UiUtils.toast(this, "\u5199\u8bc4\u4ef7"));
     }
 }
-

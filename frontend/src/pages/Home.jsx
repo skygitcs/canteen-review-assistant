@@ -16,29 +16,31 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <div className="text-xs font-semibold uppercase text-gray-400">Announcements</div>
-        <div className="mt-2 space-y-2">
-          {announcements.map((item) => (
-            <div key={item.id} className="rounded-xl bg-gray-50 px-3 py-2 text-sm">
-              <div className="font-semibold text-gray-800">{item.title}</div>
-              <div className="text-xs text-gray-500">{item.content}</div>
+      {/* 公告栏 - 滚动 */}
+      <section className="overflow-hidden rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm">
+        <div className="flex items-center gap-2 px-4 py-2">
+          <span className="text-xs font-semibold text-blue-500 shrink-0">📢 公告</span>
+          <div className="overflow-hidden flex-1">
+            <div className="animate-marquee whitespace-nowrap text-xs text-gray-500">
+              <span className="mr-10">{announcements[0].title} — {announcements[0].content}</span>
+              <span className="mr-10">{announcements[1].title} — {announcements[1].content}</span>
+              <span className="mr-10">{announcements[0].title} — {announcements[0].content}</span>
+              <span className="mr-10">{announcements[1].title} — {announcements[1].content}</span>
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
+      {/* 今日推荐 */}
       <section>
-        <div className="mb-3 text-sm font-semibold text-gray-700">Today Recommendation</div>
+        <div className="mb-3 text-sm font-semibold text-gray-700">🍚 今日推荐</div>
         <Link
           to={`/canteens/${recommended.id}`}
           className="block overflow-hidden rounded-2xl bg-white shadow-sm transition hover:-translate-y-0.5"
         >
-          <img
-            src={recommended.coverUrl}
-            alt={recommended.name}
-            className="h-40 w-full object-cover"
-          />
+          <div className="h-40 w-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+            <span className="text-3xl">🏫</span>
+          </div>
           <div className="space-y-3 p-4">
             <div className="space-y-1">
               <div className="text-lg font-semibold text-gray-900">{recommended.name}</div>
@@ -54,8 +56,9 @@ export default function Home() {
         </Link>
       </section>
 
+      {/* 特色菜品 */}
       <section className="space-y-3">
-        <div className="text-sm font-semibold text-gray-700">Featured Dishes</div>
+        <div className="text-sm font-semibold text-gray-700">🔥 特色菜品推荐</div>
         <div className="grid gap-3">
           {featured.map((dish) => (
             <Link
@@ -63,21 +66,19 @@ export default function Home() {
               to={`/dishes/${dish.id}`}
               className="flex items-center gap-3 rounded-2xl bg-white p-3 shadow-sm"
             >
-              <img
-                src={dish.imageUrl}
-                alt={dish.name}
-                className="h-16 w-16 rounded-xl object-cover"
-              />
-              <div className="flex-1">
+              <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-orange-100 to-yellow-100 flex items-center justify-center shrink-0">
+                <span className="text-xl">🍽️</span>
+              </div>
+              <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-gray-900">{dish.name}</div>
-                <div className="text-xs text-gray-500">{dish.description}</div>
+                <div className="text-xs text-gray-500 truncate">{dish.description}</div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {dish.tags.map((tag) => (
                     <Tag key={tag} label={tag} />
                   ))}
                 </div>
               </div>
-              <div className="text-sm font-semibold text-gray-900">${dish.price}</div>
+              <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">¥{dish.price}</div>
             </Link>
           ))}
         </div>

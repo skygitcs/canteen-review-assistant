@@ -9,11 +9,21 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
+    public interface OnItemClick {
+        void onClick(String item);
+    }
+
     private final List<String> items;
+    private final OnItemClick listener;
     private int selectedIndex = 0;
 
     public CategoryAdapter(List<String> items) {
+        this(items, null);
+    }
+
+    public CategoryAdapter(List<String> items, OnItemClick listener) {
         this.items = items;
+        this.listener = listener;
     }
 
     @NonNull
@@ -32,6 +42,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         holder.itemView.setOnClickListener(v -> {
             selectedIndex = holder.getAdapterPosition();
             notifyDataSetChanged();
+            if (listener != null) {
+                listener.onClick(item);
+            }
         });
     }
 
@@ -49,4 +62,3 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         }
     }
 }
-

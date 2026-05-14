@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Recent Activities"
+            android:text="&#x6700;&#x8fd1;&#x52a8;&#x6001;"
             android:textStyle="bold"
             android:textSize="14sp"
             android:textColor="@color/gray_700" />
@@ -74,7 +74,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="My Favorites"
+            android:text="&#x6211;&#x7684;&#x6536;&#x85cf;"
             android:textStyle="bold"
             android:textSize="14sp"
             android:textColor="@color/gray_700" />
@@ -91,7 +91,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Leave a message"
+            android:text="&#x7559;&#x8a00;"
             android:textAllCaps="false"
             android:backgroundTint="@color/gray_900"
             android:textColor="@color/white" />

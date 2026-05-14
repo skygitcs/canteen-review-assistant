@@ -30,10 +30,9 @@ public class HeatAdapter extends RecyclerView.Adapter<HeatAdapter.ViewHolder> {
         holder.name.setText(item.name);
         holder.value.setText(String.format("Heat %.1f", item.crowdLevel));
         int height = (int) (16 + item.crowdLevel * 18);
-        View bar = holder.itemView.findViewById(R.id.heat_bar);
-        ViewGroup.LayoutParams params = bar.getLayoutParams();
+        ViewGroup.LayoutParams params = holder.heatBar.getLayoutParams();
         params.height = height;
-        bar.setLayoutParams(params);
+        holder.heatBar.setLayoutParams(params);
     }
 
     @Override
@@ -44,11 +43,13 @@ public class HeatAdapter extends RecyclerView.Adapter<HeatAdapter.ViewHolder> {
     static class ViewHolder extends RecyclerView.ViewHolder {
         final TextView name;
         final TextView value;
+        final View heatBar;
 
         ViewHolder(View itemView) {
             super(itemView);
             name = itemView.findViewById(R.id.heat_name);
             value = itemView.findViewById(R.id.heat_value);
+            heatBar = itemView.findViewById(R.id.heat_bar);
         }
     }
 }
