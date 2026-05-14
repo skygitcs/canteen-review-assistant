@@ -66,7 +66,37 @@ public class MockRepository {
                     Arrays.asList("\u86cb\u767d\u8d28", "\u7c73\u996d", "\u54b8\u9c9c"), "\u76d6\u996d"),
             new Dish(111, 7, "\u4e01\u9999\u98df\u5802", "\u6c64\u54c1\u7a97\u53e3", 1,
                     "\u83cc\u83c7\u9e21\u6c64\u9762", "", 12.0, "\u6c64\u5473\u6e05\uff0c\u9002\u5408\u80c3\u53e3\u4e00\u822c\u7684\u65f6\u5019\u3002",
-                    Arrays.asList("\u6e05\u6de1", "\u6c64\u54c1", "\u9762\u98df"), "\u6c64\u9762")
+                    Arrays.asList("\u6e05\u6de1", "\u6c64\u54c1", "\u9762\u98df"), "\u6c64\u9762"),
+            new Dish(112, 2, "\u6843\u674e\u98df\u5802", "\u5c0f\u7092\u7a97\u53e3", 2,
+                    "\u897f\u84dd\u82b1\u725b\u8089", "", 17.0, "\u852c\u83dc\u548c\u725b\u8089\u6bd4\u4f8b\u5747\u8861\uff0c\u53e3\u5473\u4e0d\u91cd\u3002",
+                    Arrays.asList("\u6e05\u6de1", "\u86cb\u767d\u8d28", "\u70ed\u83dc"), "\u70ed\u83dc"),
+            new Dish(113, 3, "\u6e05\u82ac\u98df\u5802", "\u8f7b\u98df\u7a97\u53e3", 2,
+                    "\u9c9c\u867e\u725b\u6cb9\u679c\u5377", "", 16.0, "\u53e3\u611f\u6e05\u723d\uff0c\u9002\u5408\u4e0d\u60f3\u5403\u6cb9\u7684\u65f6\u5019\u3002",
+                    Arrays.asList("\u8f7b\u98df", "\u5065\u5eb7", "\u86cb\u767d\u8d28"), "\u8f7b\u98df"),
+            new Dish(114, 4, "\u7389\u6811\u98df\u5802", "\u7c89\u9762\u7a97\u53e3", 1,
+                    "\u9178\u8fa3\u7c89", "", 11.0, "\u9178\u5473\u660e\u663e\uff0c\u8fa3\u5ea6\u4e2d\u7b49\u3002",
+                    Arrays.asList("\u8fa3\u5473", "\u9762\u98df", "\u5feb\u9910"), "\u9762\u98df"),
+            new Dish(115, 4, "\u7389\u6811\u98df\u5802", "\u65e9\u9910\u7a97\u53e3", 1,
+                    "\u9e21\u86cb\u704c\u997c", "", 7.0, "\u4ef7\u683c\u4fbf\u5b9c\uff0c\u51fa\u9910\u5feb\u3002",
+                    Arrays.asList("\u65e9\u9910", "\u5b9e\u60e0", "\u5feb\u9910"), "\u65e9\u9910"),
+            new Dish(116, 5, "\u542c\u6d9b\u98df\u5802", "\u591c\u5bb5\u7a97\u53e3", 2,
+                    "\u9999\u8fa3\u62cc\u9762", "", 13.0, "\u591c\u5bb5\u65f6\u6bb5\u6bd4\u8f83\u53d7\u6b22\u8fce\uff0c\u8fa3\u5473\u660e\u663e\u3002",
+                    Arrays.asList("\u8fa3\u5473", "\u591c\u5bb5", "\u9762\u98df"), "\u9762\u98df"),
+            new Dish(117, 5, "\u542c\u6d9b\u98df\u5802", "\u6c64\u7c89\u7a97\u53e3", 2,
+                    "\u756a\u8304\u9c7c\u4e38\u7c89", "", 14.0, "\u756a\u8304\u6c64\u5e95\u504f\u6e05\u723d\uff0c\u4e0d\u592a\u8fa3\u3002",
+                    Arrays.asList("\u6c64\u54c1", "\u6e05\u6de1", "\u9762\u98df"), "\u6c64\u9762"),
+            new Dish(118, 6, "\u89c2\u7574\u98df\u5802", "\u5065\u8eab\u7a97\u53e3", 1,
+                    "\u9e21\u80f8\u7389\u7c73\u996d", "", 16.0, "\u86cb\u767d\u8d28\u8f83\u9ad8\uff0c\u8c03\u5473\u6bd4\u8f83\u7b80\u5355\u3002",
+                    Arrays.asList("\u5065\u5eb7", "\u86cb\u767d\u8d28", "\u7c73\u996d"), "\u76d6\u996d"),
+            new Dish(119, 6, "\u89c2\u7574\u98df\u5802", "\u70ed\u83dc\u7a97\u53e3", 1,
+                    "\u571f\u8c46\u70e7\u725b\u8089", "", 18.0, "\u725b\u8089\u548c\u571f\u8c46\u90fd\u6bd4\u8f83\u5165\u5473\u3002",
+                    Arrays.asList("\u70ed\u83dc", "\u86cb\u767d\u8d28", "\u4e0b\u996d"), "\u70ed\u83dc"),
+            new Dish(120, 7, "\u4e01\u9999\u98df\u5802", "\u7ca5\u70b9\u7a97\u53e3", 1,
+                    "\u76ae\u86cb\u7626\u8089\u7ca5", "", 8.0, "\u6e29\u70ed\u987a\u53e3\uff0c\u9002\u5408\u65e9\u4e0a\u6216\u665a\u4e0a\u3002",
+                    Arrays.asList("\u6e05\u6de1", "\u65e9\u9910", "\u5b9e\u60e0"), "\u65e9\u9910"),
+            new Dish(121, 7, "\u4e01\u9999\u98df\u5802", "\u7d20\u98df\u7a97\u53e3", 2,
+                    "\u9999\u83c7\u9752\u83dc\u996d", "", 10.0, "\u7d20\u83dc\u6bd4\u8f83\u591a\uff0c\u53e3\u5473\u8f7b\u3002",
+                    Arrays.asList("\u6e05\u6de1", "\u5065\u5eb7", "\u7c73\u996d"), "\u76d6\u996d")
     );
 
     private static final List<Review> REVIEWS = Arrays.asList(
@@ -190,6 +220,8 @@ public class MockRepository {
         List<Dish> result = new ArrayList<>();
         result.add(DISHES.get(0));
         result.add(DISHES.get(5));
+        result.add(DISHES.get(10));
+        result.add(DISHES.get(17));
         return result;
     }
 

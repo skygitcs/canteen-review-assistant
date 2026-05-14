@@ -48,6 +48,11 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         return items.size();
     }
 
+    public void addReview(Review review) {
+        items.add(0, review);
+        notifyItemInserted(0);
+    }
+
     static class ViewHolder extends RecyclerView.ViewHolder {
         final TextView user;
         final TextView rating;

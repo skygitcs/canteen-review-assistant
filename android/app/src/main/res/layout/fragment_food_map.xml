@@ -13,7 +13,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Canteen List"
+            android:text="&#x5168;&#x90e8;&#x98df;&#x5802;"
             android:textStyle="bold"
             android:textSize="14sp"
             android:textColor="@color/gray_700" />
@@ -21,11 +21,13 @@
         <EditText
             android:id="@+id/map_search_input"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="44dp"
             android:layout_marginTop="8dp"
             android:background="@drawable/bg_input"
-            android:hint="Search canteens"
-            android:padding="10dp"
+            android:hint="&#x641c;&#x7d22;&#x98df;&#x5802;&#x3001;&#x4f4d;&#x7f6e;&#x6216;&#x6807;&#x7b7e;"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:singleLine="true"
             android:textSize="14sp" />
 
         <com.google.android.material.chip.ChipGroup
@@ -42,22 +44,25 @@
             android:layout_marginTop="12dp"
             android:nestedScrollingEnabled="false" />
 
+        <!-- Keep the heat-map implementation for later, but hide it for this version. -->
         <TextView
+            android:id="@+id/heat_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Campus Heat Map"
+            android:text="&#x6821;&#x56ed;&#x70ed;&#x529b;&#x56fe;"
             android:textStyle="bold"
             android:textSize="14sp"
-            android:textColor="@color/gray_700" />
+            android:textColor="@color/gray_700"
+            android:visibility="gone" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/heat_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false" />
+            android:nestedScrollingEnabled="false"
+            android:visibility="gone" />
 
     </LinearLayout>
 </ScrollView>
-
