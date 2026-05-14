@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -60,10 +61,22 @@ public class ProfileFragment extends Fragment {
         view.findViewById(R.id.support_button).setOnClickListener(v ->
                 UiUtils.toast(requireContext(), "\u7559\u8a00\u5165\u53e3")
         );
-        view.findViewById(R.id.auth_button).setOnClickListener(v ->
-                startActivity(new Intent(requireContext(), AuthActivity.class))
-        );
+        view.findViewById(R.id.profile_header).setOnClickListener(v -> showAccountDialog());
 
         return view;
+    }
+
+    private void showAccountDialog() {
+        String[] actions = {
+                "\u5207\u6362\u8d26\u53f7",
+                "\u9000\u51fa\u767b\u5f55"
+        };
+        new AlertDialog.Builder(requireContext())
+                .setTitle("\u8d26\u53f7\u64cd\u4f5c")
+                .setItems(actions, (dialog, which) -> {
+                    Intent intent = new Intent(requireContext(), AuthActivity.class);
+                    startActivity(intent);
+                })
+                .show();
     }
 }
