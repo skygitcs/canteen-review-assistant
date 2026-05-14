@@ -20,6 +20,8 @@ backend/
 ├── docs/
 │   ├── API.md                      # Android 端对接接口文档
 │   └── backend-design.md           # 后端设计说明、ER 图、核心逻辑
+├── scripts/
+│   └── smoke-test.ps1              # 基础接口冒烟测试脚本
 └── src/main/
     ├── java/edu/thu/canteen/
     │   ├── CanteenApplication.java # Spring Boot 启动入口
@@ -61,6 +63,45 @@ mvn spring-boot:run
 ```text
 http://localhost:8080/swagger-ui.html
 ```
+
+## 基础测试
+
+建议每次推送后至少做一轮基础测试：
+
+1. 编译检查：
+
+```bash
+mvn -q -DskipTests package
+```
+
+2. 确认 MySQL 已启动，且 `application.yml` 中的账号密码可连接：
+
+```text
+jdbc:mysql://localhost:3306/thu_canteen
+username: root
+password: root
+```
+
+3. 初始化数据库：
+
+```bash
+mysql -u root -p < src/main/resources/db/schema.sql
+mysql -u root -p thu_canteen < src/main/resources/db/seed.sql
+```
+
+4. 启动后端：
+
+```bash
+mvn spring-boot:run
+```
+
+5. 另开一个 PowerShell 窗口执行冒烟测试：
+
+```powershell
+.\scripts\smoke-test.ps1
+```
+
+该脚本会依次测试公告、食堂列表、推荐菜品、注册、当前用户、拥挤度上报、收藏等核心接口。
 
 ## 管理员账号
 
