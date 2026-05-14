@@ -1,11 +1,13 @@
 package edu.thu.canteen;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -50,12 +52,31 @@ public class ProfileFragment extends Fragment {
         RecyclerView favoriteList = view.findViewById(R.id.favorite_list);
         favoriteList.setLayoutManager(new LinearLayoutManager(requireContext()));
         List<Dish> favorites = MockRepository.getFavoriteDishes();
-        favoriteList.setAdapter(new FavoriteAdapter(favorites));
+        favoriteList.setAdapter(new FavoriteAdapter(favorites, dish -> {
+            Intent intent = new Intent(requireContext(), DishDetailActivity.class);
+            intent.putExtra(DishDetailActivity.EXTRA_DISH_ID, dish.id);
+            startActivity(intent);
+        }));
 
         view.findViewById(R.id.support_button).setOnClickListener(v ->
                 UiUtils.toast(requireContext(), "\u7559\u8a00\u5165\u53e3")
         );
+        view.findViewById(R.id.profile_header).setOnClickListener(v -> showAccountDialog());
 
         return view;
+    }
+
+    private void showAccountDialog() {
+        String[] actions = {
+                "\u5207\u6362\u8d26\u53f7",
+                "\u9000\u51fa\u767b\u5f55"
+        };
+        new AlertDialog.Builder(requireContext())
+                .setTitle("\u8d26\u53f7\u64cd\u4f5c")
+                .setItems(actions, (dialog, which) -> {
+                    Intent intent = new Intent(requireContext(), AuthActivity.class);
+                    startActivity(intent);
+                })
+                .show();
     }
 }

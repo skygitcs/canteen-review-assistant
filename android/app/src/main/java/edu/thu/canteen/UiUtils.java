@@ -13,15 +13,19 @@ public class UiUtils {
         group.removeAllViews();
         for (String tag : tags) {
             Chip chip = new Chip(group.getContext());
-            int[] colors = getTagColors(tag);
             chip.setText(tag);
-            chip.setChipBackgroundColor(ColorStateList.valueOf(colors[0]));
-            chip.setTextColor(colors[1]);
-            chip.setChipStrokeColor(ColorStateList.valueOf(colors[2]));
-            chip.setChipStrokeWidth(1f);
-            chip.setTextSize(12f);
+            styleTagChip(chip, tag);
             group.addView(chip);
         }
+    }
+
+    public static void styleTagChip(Chip chip, String tag) {
+        int[] colors = getTagColors(tag);
+        chip.setChipBackgroundColor(ColorStateList.valueOf(colors[0]));
+        chip.setTextColor(colors[1]);
+        chip.setChipStrokeColor(ColorStateList.valueOf(colors[2]));
+        chip.setChipStrokeWidth(1f);
+        chip.setTextSize(12f);
     }
 
     public static int[] getTagColors(String tag) {

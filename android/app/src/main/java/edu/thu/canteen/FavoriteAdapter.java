@@ -12,10 +12,16 @@ import edu.thu.canteen.data.model.Dish;
 import java.util.List;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> {
-    private final List<Dish> items;
+    public interface OnItemClick {
+        void onClick(Dish dish);
+    }
 
-    public FavoriteAdapter(List<Dish> items) {
+    private final List<Dish> items;
+    private final OnItemClick listener;
+
+    public FavoriteAdapter(List<Dish> items, OnItemClick listener) {
         this.items = items;
+        this.listener = listener;
     }
 
     @NonNull
@@ -38,6 +44,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         } else {
             Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
         }
+        holder.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 
     @Override

@@ -15,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.MockRepository;
 import edu.thu.canteen.data.model.Canteen;
@@ -43,6 +44,7 @@ public class CanteenDetailActivity extends AppCompatActivity {
         ImageView cover = findViewById(R.id.canteen_cover);
         TextView name = findViewById(R.id.canteen_name);
         TextView address = findViewById(R.id.canteen_address);
+        TextView navTitle = findViewById(R.id.nav_title);
         ChipGroup tags = findViewById(R.id.canteen_tags);
 
         if (canteen.coverUrl == null || canteen.coverUrl.isEmpty()) {
@@ -52,8 +54,12 @@ public class CanteenDetailActivity extends AppCompatActivity {
             Glide.with(this).load(canteen.coverUrl).into(cover);
         }
         name.setText(canteen.name);
+        navTitle.setText(canteen.name);
         address.setText(canteen.address);
         UiUtils.bindTags(tags, canteen.tags);
+        findViewById(R.id.nav_back).setOnClickListener(v -> finish());
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        NavigationHelper.bind(this, bottomNav, NavigationHelper.TAB_FOOD_MAP);
 
         EditText searchInput = findViewById(R.id.dish_search_input);
         Spinner windowSpinner = findViewById(R.id.window_spinner);
@@ -99,7 +105,7 @@ public class CanteenDetailActivity extends AppCompatActivity {
         dishList.setAdapter(dishAdapter);
 
         Button addDish = findViewById(R.id.add_dish_button);
-        addDish.setOnClickListener(v -> UiUtils.toast(this, "\u8865\u5145\u83dc\u54c1\u4fe1\u606f"));
+        addDish.setOnClickListener(v -> FormDialogs.showSupplementDialog(this));
     }
 
     private void applyFilters() {

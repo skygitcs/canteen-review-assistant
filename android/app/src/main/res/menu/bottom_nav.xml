@@ -5,6 +5,10 @@
         android:title="&#x9996;&#x9875;"
         android:icon="@drawable/ic_home" />
     <item
+        android:id="@+id/menu_food_map"
+        android:title="&#x7f8e;&#x98df;&#x5e7f;&#x573a;"
+        android:icon="@drawable/ic_map" />
+    <item
         android:id="@+id/menu_profile"
         android:title="&#x6211;&#x7684;"
         android:icon="@drawable/ic_person" />

@@ -51,7 +51,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rating"
+            android:text="&#x8bc4;&#x5206;"
             android:textSize="10sp"
             android:textColor="@color/gray_500" />
 
@@ -65,7 +65,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Crowd"
+            android:text="&#x62e5;&#x6324;"
             android:textSize="10sp"
             android:textColor="@color/gray_500" />
 

@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -25,7 +24,7 @@ public class FoodMapFragment extends Fragment {
     private final List<Canteen> filtered = new ArrayList<>();
     private CanteenAdapter canteenAdapter;
     private HeatAdapter heatAdapter;
-    private String activeTag = "All";
+    private String activeTag = "\u5168\u90e8";
     private String query = "";
 
     @Nullable
@@ -39,10 +38,10 @@ public class FoodMapFragment extends Fragment {
         RecyclerView canteenList = view.findViewById(R.id.canteen_list);
         RecyclerView heatList = view.findViewById(R.id.heat_list);
 
-        List<String> tags = MockRepository.getCanteenTags();
-        for (String tag : tags) {
+        for (String tag : MockRepository.getCanteenTags()) {
             Chip chip = (Chip) inflater.inflate(R.layout.item_tag_chip, tagGroup, false);
             chip.setText(tag);
+            UiUtils.styleTagChip(chip, tag);
             chip.setOnClickListener(v -> {
                 activeTag = tag;
                 updateFilters();
@@ -84,9 +83,13 @@ public class FoodMapFragment extends Fragment {
 
     private void updateFilters() {
         filtered.clear();
+        String trimmedQuery = query.trim();
         for (Canteen canteen : MockRepository.getCanteens()) {
-            boolean matchesTag = "All".equals(activeTag) || canteen.tags.contains(activeTag);
-            boolean matchesQuery = canteen.name.toLowerCase().contains(query.trim().toLowerCase());
+            boolean matchesTag = "\u5168\u90e8".equals(activeTag) || canteen.tags.contains(activeTag);
+            boolean matchesQuery = trimmedQuery.isEmpty()
+                    || canteen.name.contains(trimmedQuery)
+                    || canteen.address.contains(trimmedQuery)
+                    || canteen.tags.toString().contains(trimmedQuery);
             if (matchesTag && matchesQuery) {
                 filtered.add(canteen);
             }
@@ -95,4 +98,3 @@ public class FoodMapFragment extends Fragment {
         heatAdapter.notifyDataSetChanged();
     }
 }
-
