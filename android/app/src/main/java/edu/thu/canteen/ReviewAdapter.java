@@ -31,11 +31,16 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Review item = items.get(position);
         holder.user.setText(item.userName);
-        holder.rating.setText(String.format("Rating %d", item.rating));
+        holder.rating.setText(String.format("\u8bc4\u5206 %d", item.rating));
         holder.content.setText(item.content);
-        Glide.with(holder.image.getContext()).load(item.imageUrl).into(holder.image);
+        if (item.imageUrl == null || item.imageUrl.isEmpty()) {
+            holder.image.setImageDrawable(null);
+            holder.image.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(holder.image.getContext()).load(item.imageUrl).into(holder.image);
+        }
         holder.like.setOnClickListener(v ->
-                UiUtils.toast(holder.itemView.getContext(), "Like"));
+                UiUtils.toast(holder.itemView.getContext(), "\u5df2\u70b9\u8d5e"));
     }
 
     @Override
@@ -60,4 +65,3 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         }
     }
 }
-

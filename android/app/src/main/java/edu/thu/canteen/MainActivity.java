@@ -18,8 +18,6 @@ public class MainActivity extends AppCompatActivity {
             Fragment fragment;
             if (item.getItemId() == R.id.menu_home) {
                 fragment = new HomeFragment();
-            } else if (item.getItemId() == R.id.menu_map) {
-                fragment = new FoodMapFragment();
             } else {
                 fragment = new ProfileFragment();
             }
@@ -39,4 +37,3 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
     }
 }
-

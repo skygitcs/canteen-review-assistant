@@ -41,7 +41,12 @@ public class CanteenAdapter extends RecyclerView.Adapter<CanteenAdapter.ViewHold
         holder.rating.setText(String.format("%.1f", item.avgRating));
         holder.crowd.setText(String.format("%.1f", item.crowdLevel));
         UiUtils.bindTags(holder.tags, item.tags);
-        Glide.with(holder.cover.getContext()).load(item.coverUrl).into(holder.cover);
+        if (item.coverUrl == null || item.coverUrl.isEmpty()) {
+            holder.cover.setImageDrawable(null);
+            holder.cover.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(holder.cover.getContext()).load(item.coverUrl).into(holder.cover);
+        }
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 
@@ -69,4 +74,3 @@ public class CanteenAdapter extends RecyclerView.Adapter<CanteenAdapter.ViewHold
         }
     }
 }
-

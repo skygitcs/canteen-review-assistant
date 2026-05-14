@@ -29,11 +29,10 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         LinearLayout announcementList = view.findViewById(R.id.announcement_list);
-        for (String notice : MockRepository.getAnnouncements()) {
-            TextView item = (TextView) inflater.inflate(R.layout.item_announcement, announcementList, false);
-            item.setText(notice);
-            announcementList.addView(item);
-        }
+        TextView announcement = (TextView) inflater.inflate(R.layout.item_announcement, announcementList, false);
+        announcement.setText(String.join("    \u00b7    ", MockRepository.getAnnouncements()));
+        announcement.setSelected(true);
+        announcementList.addView(announcement);
 
         Canteen recommended = MockRepository.getRecommendedCanteen();
         ImageView cover = view.findViewById(R.id.recommend_cover);
@@ -42,10 +41,15 @@ public class HomeFragment extends Fragment {
         TextView rating = view.findViewById(R.id.recommend_rating);
         ChipGroup tags = view.findViewById(R.id.recommend_tags);
 
-        Glide.with(this).load(recommended.coverUrl).into(cover);
+        if (recommended.coverUrl == null || recommended.coverUrl.isEmpty()) {
+            cover.setImageDrawable(null);
+            cover.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(this).load(recommended.coverUrl).into(cover);
+        }
         name.setText(recommended.name);
         address.setText(recommended.address);
-        rating.setText(String.format("Rating %.1f", recommended.avgRating));
+        rating.setText(String.format("\u8bc4\u5206 %.1f", recommended.avgRating));
         UiUtils.bindTags(tags, recommended.tags);
 
         View recommendCard = view.findViewById(R.id.recommend_card);
@@ -68,4 +72,3 @@ public class HomeFragment extends Fragment {
         return view;
     }
 }
-

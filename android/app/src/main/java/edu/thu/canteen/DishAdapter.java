@@ -37,16 +37,27 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Dish item = items.get(position);
         holder.name.setText(item.name);
-        holder.window.setText(item.windowName);
-        holder.price.setText(String.format("$%.2f", item.price));
+        holder.window.setText(item.floorNo + "\u697c \u00b7 " + item.windowName);
+        holder.price.setText(String.format("\u00a5%.2f", item.price));
         UiUtils.bindTags(holder.tags, item.tags);
-        Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
+        if (item.imageUrl == null || item.imageUrl.isEmpty()) {
+            holder.cover.setImageDrawable(null);
+            holder.cover.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
+        }
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 
     @Override
     public int getItemCount() {
         return items.size();
+    }
+
+    public void replaceItems(List<Dish> nextItems) {
+        items.clear();
+        items.addAll(nextItems);
+        notifyDataSetChanged();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
@@ -66,4 +77,3 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
         }
     }
 }
-

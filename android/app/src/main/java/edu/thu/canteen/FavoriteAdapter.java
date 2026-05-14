@@ -31,8 +31,13 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         Dish item = items.get(position);
         holder.name.setText(item.name);
         holder.canteen.setText(item.canteenName);
-        holder.price.setText(String.format("$%.2f", item.price));
-        Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
+        holder.price.setText(String.format("\u00a5%.2f", item.price));
+        if (item.imageUrl == null || item.imageUrl.isEmpty()) {
+            holder.cover.setImageDrawable(null);
+            holder.cover.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
+        }
     }
 
     @Override
@@ -55,4 +60,3 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         }
     }
 }
-

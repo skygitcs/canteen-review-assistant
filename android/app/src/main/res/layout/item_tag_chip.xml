@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.chip.Chip
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     style="@style/Widget.MaterialComponents.Chip.Choice"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:textSize="12sp"
     android:textColor="@color/purple_700"
-    android:chipBackgroundColor="@color/purple_100"
-    android:chipStrokeColor="@color/purple_300"
-    android:chipStrokeWidth="1dp" />
+    app:chipBackgroundColor="@color/purple_100"
+    app:chipStrokeColor="@color/purple_300"
+    app:chipStrokeWidth="1dp" />

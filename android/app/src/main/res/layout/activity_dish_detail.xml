@@ -58,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:text="Write review"
+            android:text="&#x5199;&#x8bc4;&#x4ef7;"
             android:textAllCaps="false" />
 
         <androidx.recyclerview.widget.RecyclerView

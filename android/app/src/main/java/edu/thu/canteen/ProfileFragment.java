@@ -32,7 +32,12 @@ public class ProfileFragment extends Fragment {
         TextView username = view.findViewById(R.id.profile_username);
         TextView preference = view.findViewById(R.id.profile_preference);
 
-        Glide.with(this).load(profile.avatarUrl).into(avatar);
+        if (profile.avatarUrl == null || profile.avatarUrl.isEmpty()) {
+            avatar.setImageDrawable(null);
+            avatar.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(requireContext()).load(profile.avatarUrl).into(avatar);
+        }
         name.setText(profile.nickname);
         username.setText("@" + profile.username);
         preference.setText(profile.tastePreference);
@@ -48,10 +53,9 @@ public class ProfileFragment extends Fragment {
         favoriteList.setAdapter(new FavoriteAdapter(favorites));
 
         view.findViewById(R.id.support_button).setOnClickListener(v ->
-                UiUtils.toast(requireContext(), "Support message entry")
+                UiUtils.toast(requireContext(), "\u7559\u8a00\u5165\u53e3")
         );
 
         return view;
     }
 }
-
