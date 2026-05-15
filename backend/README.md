@@ -50,7 +50,18 @@ source src/main/resources/db/schema.sql;
 source src/main/resources/db/seed.sql;
 ```
 
-2. 修改 `src/main/resources/application.yml` 中的 MySQL 用户名和密码。
+2. 如本机 MySQL 密码不是默认值，通过环境变量覆盖数据库配置。PowerShell 示例：
+
+```powershell
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="你的本机 MySQL 密码"
+```
+
+也可以按需覆盖完整连接地址：
+
+```powershell
+$env:DB_URL="jdbc:mysql://localhost:3306/thu_canteen?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai"
+```
 
 3. 启动服务：
 
@@ -74,12 +85,12 @@ http://localhost:8080/swagger-ui.html
 mvn -q -DskipTests package
 ```
 
-2. 确认 MySQL 已启动，且 `application.yml` 中的账号密码可连接：
+2. 确认 MySQL 已启动，且环境变量或默认配置可连接：
 
 ```text
-jdbc:mysql://localhost:3306/thu_canteen
-username: root
-password: root
+DB_URL 默认值: jdbc:mysql://localhost:3306/thu_canteen
+DB_USERNAME 默认值: root
+DB_PASSWORD 默认值: root
 ```
 
 3. 初始化数据库：
