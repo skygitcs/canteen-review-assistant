@@ -66,6 +66,13 @@ public class DishService {
                 .toList();
     }
 
+    public List<String> tags() {
+        return dishTagMapper.selectList(Wrappers.<DishTag>lambdaQuery().orderByAsc(DishTag::getTag)).stream()
+                .map(DishTag::getTag)
+                .distinct()
+                .toList();
+    }
+
     @Transactional
     public DishSubmission submit(DishDtos.DishSubmissionRequest request) {
         if (canteenMapper.selectById(request.canteenId()) == null) {
