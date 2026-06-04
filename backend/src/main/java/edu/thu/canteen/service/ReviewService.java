@@ -54,9 +54,6 @@ public class ReviewService {
 
     @Transactional
     public ReviewDtos.ReviewView vote(Long reviewId, Integer vote) {
-        if (vote == 0) {
-            throw BusinessException.badRequest("vote must be 1 or -1");
-        }
         Review review = reviewMapper.selectById(reviewId);
         if (review == null || !"APPROVED".equals(review.getStatus())) {
             throw BusinessException.notFound("review not found");
@@ -65,6 +62,12 @@ public class ReviewService {
         ReviewVote existing = voteMapper.selectOne(Wrappers.<ReviewVote>lambdaQuery()
                 .eq(ReviewVote::getReviewId, reviewId)
                 .eq(ReviewVote::getUserId, userId));
+        if (vote == 0) {
+            if (existing != null) {
+                voteMapper.deleteById(existing.getId());
+            }
+            return dishViewService.reviewView(review);
+        }
         if (existing == null) {
             ReviewVote entity = new ReviewVote();
             entity.setReviewId(reviewId);

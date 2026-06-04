@@ -1,0 +1,69 @@
+package edu.thu.canteen;
+
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.chip.ChipGroup;
+import edu.thu.canteen.data.MockRepository;
+import edu.thu.canteen.data.model.Dish;
+import edu.thu.canteen.data.model.Review;
+import java.util.ArrayList;
+import java.util.List;
+
+public class DishDetailActivity extends AppCompatActivity {
+    public static final String EXTRA_DISH_ID = "extra_dish_id";
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_dish_detail);
+
+        long dishId = getIntent().getLongExtra(EXTRA_DISH_ID, 101L);
+        Dish dish = MockRepository.getDishById(dishId);
+
+        ImageView cover = findViewById(R.id.dish_cover);
+        TextView name = findViewById(R.id.dish_name);
+        TextView canteen = findViewById(R.id.dish_canteen);
+        TextView price = findViewById(R.id.dish_price);
+        TextView description = findViewById(R.id.dish_description);
+        TextView navTitle = findViewById(R.id.nav_title);
+        ChipGroup tags = findViewById(R.id.dish_tags);
+
+        if (dish.imageUrl == null || dish.imageUrl.isEmpty()) {
+            cover.setImageDrawable(null);
+            cover.setBackgroundResource(R.drawable.bg_image_placeholder);
+        } else {
+            Glide.with(this).load(dish.imageUrl).into(cover);
+        }
+        name.setText(dish.name);
+        navTitle.setText(dish.name);
+        canteen.setText(dish.canteenName);
+        price.setText(String.format("\u00a5%.2f", dish.price));
+        description.setText(dish.description);
+        UiUtils.bindTags(tags, dish.tags);
+
+        RecyclerView reviewList = findViewById(R.id.review_list);
+        reviewList.setLayoutManager(new LinearLayoutManager(this));
+        List<Review> reviews = new ArrayList<>(MockRepository.getReviewsByDish(dishId));
+        ReviewAdapter reviewAdapter = new ReviewAdapter(reviews);
+        reviewList.setAdapter(reviewAdapter);
+
+        Button writeReview = findViewById(R.id.write_review_button);
+        writeReview.setOnClickListener(v -> FormDialogs.showReviewDialog(this, (rating, content) -> {
+            reviewAdapter.addReview(new Review(System.currentTimeMillis(), dish.id,
+                    "\u6211", rating, content, ""));
+            reviewList.scrollToPosition(0);
+            UiUtils.toast(this, "\u8bc4\u4ef7\u5df2\u53d1\u5e03");
+        }));
+        findViewById(R.id.nav_back).setOnClickListener(v -> finish());
+        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        NavigationHelper.bind(this, bottomNav, NavigationHelper.TAB_FOOD_MAP);
+    }
+}
