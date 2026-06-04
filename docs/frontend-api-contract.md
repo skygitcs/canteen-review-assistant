@@ -71,7 +71,21 @@ Authorization: Bearer 登录返回的token
 - 补充菜品信息
 - 上报拥挤度
 
-### 1.4 JSON 请求头
+### 1.4 演示账号
+
+导入后端 `seed.sql` 后，可以使用以下账号登录。密码均为：
+
+```text
+password
+```
+
+| 用户名 | 角色 | 说明 |
+| --- | --- | --- |
+| demo | USER | 普通演示用户 |
+| reviewer | USER | 带有部分评价和收藏数据 |
+| admin | ADMIN | 管理员演示用户 |
+
+### 1.5 JSON 请求头
 
 除特别说明外，请求体都使用 JSON：
 
@@ -80,6 +94,26 @@ Content-Type: application/json
 ```
 
 目前先不做真正的图片上传，图片字段统一传 `imageUrl` 字符串。没有图片时可以传 `null` 或空字符串。
+
+### 1.6 常见错误返回
+
+后端统一使用业务 `code` 表示错误。即使未登录或无权限，也会返回 JSON：
+
+```json
+{
+  "code": 401,
+  "message": "login required",
+  "data": null
+}
+```
+
+```json
+{
+  "code": 403,
+  "message": "permission denied",
+  "data": null
+}
+```
 
 ## 2. 登录与注册
 
