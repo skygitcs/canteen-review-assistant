@@ -14,6 +14,7 @@ import java.util.List;
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHolder> {
     public interface OnItemClick {
         void onClick(Dish dish);
+        void onDelete(Dish dish);
     }
 
     private final List<Dish> items;
@@ -45,6 +46,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
         }
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
+        holder.delete.setOnClickListener(v -> listener.onDelete(item));
     }
 
     @Override
@@ -57,6 +59,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         final TextView name;
         final TextView canteen;
         final TextView price;
+        final View delete;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -64,6 +67,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
             name = itemView.findViewById(R.id.item_favorite_name);
             canteen = itemView.findViewById(R.id.item_favorite_canteen);
             price = itemView.findViewById(R.id.item_favorite_price);
+            delete = itemView.findViewById(R.id.item_favorite_delete);
         }
     }
 }

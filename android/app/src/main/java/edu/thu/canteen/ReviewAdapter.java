@@ -3,20 +3,30 @@ package edu.thu.canteen;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import edu.thu.canteen.data.model.Review;
+import edu.thu.canteen.data.network.ApiResponse;
+import edu.thu.canteen.data.network.DishDtos;
+import edu.thu.canteen.data.network.NetworkClient;
 import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
     private final List<Review> items;
+    private Runnable refreshTrigger;
 
     public ReviewAdapter(List<Review> items) {
         this.items = items;
+    }
+
+    public void setOnVoteListener(Runnable refreshTrigger) {
+        this.refreshTrigger = refreshTrigger;
     }
 
     @NonNull
@@ -33,14 +43,49 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         holder.user.setText(item.userName);
         holder.rating.setText(String.format("\u8bc4\u5206 %d", item.rating));
         holder.content.setText(item.content);
+        
         if (item.imageUrl == null || item.imageUrl.isEmpty()) {
-            holder.image.setImageDrawable(null);
-            holder.image.setBackgroundResource(R.drawable.bg_image_placeholder);
+            holder.image.setVisibility(View.GONE);
         } else {
+            holder.image.setVisibility(View.VISIBLE);
             Glide.with(holder.image.getContext()).load(item.imageUrl).into(holder.image);
+            holder.image.setOnClickListener(v -> {
+                android.content.Context context = holder.itemView.getContext();
+                if (context instanceof androidx.fragment.app.FragmentActivity) {
+                    ImageViewerDialog.show((androidx.fragment.app.FragmentActivity) context, item.imageUrl);
+                }
+            });
         }
-        holder.like.setOnClickListener(v ->
-                UiUtils.toast(holder.itemView.getContext(), "\u5df2\u70b9\u8d5e"));
+        
+        holder.upvote.setText("\uD83D\uDC4D " + item.upVotes);
+        holder.downvote.setText("\uD83D\uDC4E " + item.downVotes);
+
+        // Highlight based on userVote
+        holder.upvote.setAlpha(item.userVote == 1 ? 1.0f : 0.5f);
+        holder.downvote.setAlpha(item.userVote == -1 ? 1.0f : 0.5f);
+
+        holder.upvote.setOnClickListener(v -> {
+            int targetVote = item.userVote == 1 ? 0 : 1;
+            handleVote(item.id, targetVote);
+        });
+        holder.downvote.setOnClickListener(v -> {
+            int targetVote = item.userVote == -1 ? 0 : -1;
+            handleVote(item.id, targetVote);
+        });
+    }
+
+    private void handleVote(long reviewId, int vote) {
+        NetworkClient.getService().voteReview(reviewId, new DishDtos.VoteRequest(vote))
+                .enqueue(new Callback<ApiResponse<Object>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
+                        if (response.isSuccessful() && refreshTrigger != null) {
+                            refreshTrigger.run(); // Reload from server to get accurate counts
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {}
+                });
     }
 
     @Override
@@ -58,7 +103,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         final TextView rating;
         final TextView content;
         final ImageView image;
-        final Button like;
+        final TextView upvote;
+        final TextView downvote;
 
         ViewHolder(View itemView) {
             super(itemView);
@@ -66,7 +112,8 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
             rating = itemView.findViewById(R.id.item_review_rating);
             content = itemView.findViewById(R.id.item_review_content);
             image = itemView.findViewById(R.id.item_review_image);
-            like = itemView.findViewById(R.id.item_review_like);
+            upvote = itemView.findViewById(R.id.item_review_upvote);
+            downvote = itemView.findViewById(R.id.item_review_downvote);
         }
     }
 }
