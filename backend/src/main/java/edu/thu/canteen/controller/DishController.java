@@ -38,6 +38,11 @@ public class DishController {
         return ApiResponse.ok(dishService.recommendations(limit));
     }
 
+    @GetMapping("/tags")
+    public ApiResponse<List<String>> tags() {
+        return ApiResponse.ok(dishService.tags());
+    }
+
     @PostMapping("/submissions")
     public ApiResponse<DishSubmission> submit(@Valid @RequestBody DishDtos.DishSubmissionRequest request) {
         return ApiResponse.ok(dishService.submit(request));

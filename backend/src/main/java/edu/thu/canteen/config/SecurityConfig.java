@@ -35,7 +35,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 writeJsonError(response, 403, "permission denied")))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/health", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.GET,
                                 "/api/canteens/**", "/api/dishes/**", "/api/announcements/**", "/api/recommendations/**").permitAll()
                         .anyRequest().authenticated())

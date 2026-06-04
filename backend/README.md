@@ -157,21 +157,57 @@ src/main/resources/application.yml
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/thu_canteen?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
-    username: root
-    password: root
+    url: ${DB_URL:jdbc:mysql://localhost:3306/thu_canteen?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:root}
 ```
 
 如果你的 MySQL 密码不是 `root`，把 `password` 改成自己的密码。
 
+也可以不改文件，直接在 PowerShell 里设置环境变量：
+
+```powershell
+$env:DB_USERNAME="root"
+$env:DB_PASSWORD="你的MySQL密码"
+```
+
+然后再启动后端。这样不同同学可以使用自己的数据库密码，不需要提交个人配置。
+
 ### 4.2 初始化数据库
+
+先进入 MySQL。
+
+因为 `seed.sql` 中包含中文数据，导入脚本时建议始终带上 `--default-character-set=utf8mb4`。否则 Windows 命令行环境下可能把中文按错误编码读入，导致 `Incorrect string value` 或 `Data too long`。
+
+如果已经把 MySQL 加入了环境变量，可以执行：
+
+```powershell
+mysql --default-character-set=utf8mb4 -u root -p
+```
+
+如果 PowerShell 提示找不到 `mysql`，可以用完整路径：
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --default-character-set=utf8mb4 -u root -p
+```
+
+然后输入安装 MySQL 时设置的 root 密码。注意输入密码时命令行通常不会显示字符，这是正常的。
+
+看到类似下面的提示符，就说明已经进入 MySQL：
+
+```text
+mysql>
+```
 
 进入 MySQL 后执行：
 
 ```sql
+DROP DATABASE IF EXISTS thu_canteen;
 SOURCE E:/canteen-review/canteen-review-assistant/backend/src/main/resources/db/schema.sql;
 SOURCE E:/canteen-review/canteen-review-assistant/backend/src/main/resources/db/seed.sql;
 ```
+
+第一次初始化或者导入数据出错后，建议先执行 `DROP DATABASE IF EXISTS thu_canteen;` 再重新导入，避免残留的半截数据影响后续外键插入。
 
 如果项目路径不同，把 `SOURCE` 后面的路径改成自己电脑上的实际路径。
 
@@ -197,6 +233,14 @@ http://localhost:8080/swagger-ui.html
 ```text
 http://localhost:8080/v3/api-docs
 ```
+
+也可以先访问健康检查接口：
+
+```text
+http://localhost:8080/api/health
+```
+
+如果返回 `status: UP`，说明后端服务已经通了。
 
 ## 5. Android 真机联调
 
@@ -271,6 +315,7 @@ http://localhost:8080/swagger-ui.html
 - `GET /api/dishes`
 - `GET /api/dishes/{id}`
 - `GET /api/dishes/recommendations`
+- `GET /api/dishes/tags`
 - `POST /api/dishes/{dishId}/reviews`
 - `GET /api/users/me/favorites`
 - `POST /api/users/me/favorites`
@@ -341,13 +386,41 @@ Authorization: Bearer token内容
 - 列表接口暂时不分页，演示数据量较小。
 - 管理员功能主要通过 Swagger 演示，Android 端可以不做完整后台页面。
 
-## 11. 常见问题
+## 11. 自动化冒烟测试
 
-### 11.1 `mvn` 找不到
+后端启动后，可以在项目根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend/scripts/smoke-test.ps1
+```
+
+脚本会自动测试：
+
+- 健康检查
+- 注册和登录
+- 演示账号登录
+- 公告列表
+- 食堂列表和详情
+- 菜品列表、详情、推荐和标签
+- 写评价
+- 收藏和查询收藏
+- 补充菜品信息
+
+看到下面输出表示主流程可用：
+
+```text
+Smoke test passed.
+```
+
+注意：冒烟测试会创建一个临时用户，并写入一条评价、一条收藏和一条补充菜品信息。用于本地测试和验收演示是可以接受的。
+
+## 12. 常见问题
+
+### 12.1 `mvn` 找不到
 
 说明 Maven 没安装好，或者 `Path` 没配置 `%MAVEN_HOME%\bin`。
 
-### 11.2 后端启动时报 MySQL 连接失败
+### 12.2 后端启动时报 MySQL 连接失败
 
 优先检查：
 
@@ -356,11 +429,36 @@ Authorization: Bearer token内容
 - 是否执行过 `schema.sql`
 - 数据库名是否是 `thu_canteen`
 
-### 11.3 Swagger 能打开，但接口没有数据
+### 12.3 Swagger 能打开，但接口没有数据
 
 通常是没有执行 `seed.sql`，或者执行到了另一个数据库。
 
-### 11.4 Android 真机访问不了
+### 12.4 导入 `seed.sql` 时中文报错
+
+如果看到类似错误：
+
+```text
+Incorrect string value
+Data too long for column
+```
+
+通常是 MySQL 命令行没有按 UTF-8 读取中文 SQL 文件。
+
+退出 MySQL 后，用下面的命令重新进入：
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" --default-character-set=utf8mb4 -u root -p
+```
+
+然后删库重建并重新导入：
+
+```sql
+DROP DATABASE IF EXISTS thu_canteen;
+SOURCE E:/canteen-review/canteen-review-assistant/backend/src/main/resources/db/schema.sql;
+SOURCE E:/canteen-review/canteen-review-assistant/backend/src/main/resources/db/seed.sql;
+```
+
+### 12.5 Android 真机访问不了
 
 优先检查：
 

@@ -53,11 +53,13 @@ Authorization: Bearer 登录返回的token
 
 不需要登录也能访问：
 
+- 健康检查
 - 获取食堂列表
 - 获取食堂详情
 - 获取菜品列表
 - 获取菜品详情
 - 获取推荐菜品
+- 获取菜品标签
 - 获取公告
 
 需要登录才能访问：
@@ -115,9 +117,33 @@ Content-Type: application/json
 }
 ```
 
-## 2. 登录与注册
+## 2. 健康检查
 
-### 2.1 注册
+### 2.1 检查后端是否在线
+
+```http
+GET /api/health
+```
+
+返回 `data`：
+
+```json
+{
+  "status": "UP",
+  "time": "2026-06-04 18:30:00"
+}
+```
+
+前端页面对应：
+
+- 联调时手动检查 Base URL 是否写对
+- App 启动时可以临时用来判断后端是否可访问
+
+正式页面不一定要展示这个接口。
+
+## 3. 登录与注册
+
+### 3.1 注册
 
 ```http
 POST /api/auth/register
@@ -158,7 +184,7 @@ POST /api/auth/register
 }
 ```
 
-### 2.2 登录
+### 3.2 登录
 
 ```http
 POST /api/auth/login
@@ -181,9 +207,9 @@ POST /api/auth/login
 - 注册页
 - 个人页切换账号
 
-## 3. 公告
+## 4. 公告
 
-### 3.1 获取当前公告
+### 4.1 获取当前公告
 
 ```http
 GET /api/announcements
@@ -209,9 +235,9 @@ GET /api/announcements
 
 - 首页顶部滚动公告栏
 
-## 4. 食堂
+## 5. 食堂
 
-### 4.1 获取食堂列表
+### 5.1 获取食堂列表
 
 ```http
 GET /api/canteens
@@ -257,7 +283,7 @@ GET /api/canteens?keyword=紫荆&onCampus=true&sort=rating
 - 美食广场
 - 首页推荐食堂
 
-### 4.2 获取食堂详情
+### 5.2 获取食堂详情
 
 ```http
 GET /api/canteens/{id}
@@ -335,7 +361,7 @@ GET /api/canteens/1?floorNo=2&tag=辣味&sort=rating
 - 左侧楼层栏使用 `windows.floorNo`
 - 顶部搜索/筛选调用该接口或本地筛选都可以
 
-### 4.3 上报拥挤度
+### 5.3 上报拥挤度
 
 ```http
 POST /api/canteens/{id}/crowd
@@ -371,9 +397,9 @@ POST /api/canteens/{id}/crowd
 
 - 食堂详情页的拥挤度反馈，可以验收前再接
 
-## 5. 菜品
+## 6. 菜品
 
-### 5.1 获取菜品列表
+### 6.1 获取菜品列表
 
 ```http
 GET /api/dishes
@@ -425,7 +451,7 @@ GET /api/dishes?canteenId=1&keyword=牛肉&tag=辣味&sort=rating
 - 首页推荐菜品
 - 食堂详情页菜品列表
 
-### 5.2 获取菜品详情
+### 6.2 获取菜品详情
 
 ```http
 GET /api/dishes/{id}
@@ -474,7 +500,7 @@ GET /api/dishes/{id}
 - 菜品详情页
 - 评价列表
 
-### 5.3 获取推荐菜品
+### 6.3 获取推荐菜品
 
 ```http
 GET /api/dishes/recommendations
@@ -498,7 +524,30 @@ GET /api/dishes/recommendations?limit=6
 
 - 首页推荐菜品
 
-### 5.4 补充菜品信息
+### 6.4 获取菜品标签
+
+```http
+GET /api/dishes/tags
+```
+
+返回 `data`：
+
+```json
+[
+  "清淡",
+  "辣味",
+  "家常",
+  "下饭",
+  "早餐"
+]
+```
+
+前端页面对应：
+
+- 美食广场标签筛选
+- 补充菜品信息弹窗里的标签候选
+
+### 6.5 补充菜品信息
 
 ```http
 POST /api/dishes/submissions
@@ -543,9 +592,9 @@ POST /api/dishes/submissions
 - 先让前端选择食堂、窗口、输入菜名、价格、描述、标签。
 - 图片先只保留 UI，不一定真的上传。
 
-## 6. 评价
+## 7. 评价
 
-### 6.1 写评价
+### 7.1 写评价
 
 ```http
 POST /api/dishes/{dishId}/reviews
@@ -593,7 +642,7 @@ POST /api/dishes/{dishId}/reviews
 - 菜品详情页写评价弹窗
 - 五星评分只传整数 `1` 到 `5`
 
-### 6.2 给评价点赞/踩
+### 7.2 给评价点赞/踩
 
 ```http
 POST /api/reviews/{reviewId}/vote
@@ -623,9 +672,9 @@ POST /api/reviews/{reviewId}/vote
 
 - 菜品详情页评价列表，可以作为后续功能
 
-## 7. 用户与收藏
+## 8. 用户与收藏
 
-### 7.1 获取当前用户
+### 8.1 获取当前用户
 
 ```http
 GET /api/users/me
@@ -652,7 +701,7 @@ GET /api/users/me
 - 个人页
 - 启动后判断登录状态
 
-### 7.2 修改个人资料
+### 8.2 修改个人资料
 
 ```http
 PUT /api/users/me
@@ -673,7 +722,7 @@ PUT /api/users/me
 
 返回 `data`：更新后的用户资料。
 
-### 7.3 获取我的收藏
+### 8.3 获取我的收藏
 
 ```http
 GET /api/users/me/favorites
@@ -688,7 +737,7 @@ GET /api/users/me/favorites
 - 个人页收藏列表
 - 收藏里的菜品点击进入菜品详情页
 
-### 7.4 添加收藏
+### 8.4 添加收藏
 
 ```http
 POST /api/users/me/favorites
@@ -714,7 +763,7 @@ POST /api/users/me/favorites
 }
 ```
 
-### 7.5 取消收藏
+### 8.5 取消收藏
 
 ```http
 DELETE /api/users/me/favorites/{dishId}
@@ -729,19 +778,19 @@ DELETE /api/users/me/favorites/{dishId}
 - 菜品详情页收藏按钮
 - 个人页收藏列表
 
-## 8. 管理员接口
+## 9. 管理员接口
 
 管理员接口前端主 App 可以先不接，验收时可以用 Swagger 展示。
 
 需要管理员账号，并且 token 对应用户角色为 `ADMIN`。
 
-### 8.1 获取待审核补充信息
+### 9.1 获取待审核补充信息
 
 ```http
 GET /api/admin/submissions
 ```
 
-### 8.2 通过补充信息
+### 9.2 通过补充信息
 
 ```http
 POST /api/admin/submissions/{id}/approve
@@ -755,7 +804,7 @@ POST /api/admin/submissions/{id}/approve
 }
 ```
 
-### 8.3 拒绝补充信息
+### 9.3 拒绝补充信息
 
 ```http
 POST /api/admin/submissions/{id}/reject
@@ -769,7 +818,7 @@ POST /api/admin/submissions/{id}/reject
 }
 ```
 
-### 8.4 发布公告
+### 9.4 发布公告
 
 ```http
 POST /api/admin/announcements
@@ -784,16 +833,17 @@ POST /api/admin/announcements
 }
 ```
 
-## 9. 前端页面接口对应表
+## 10. 前端页面接口对应表
 
 | 前端页面 | 需要调用的接口 |
 | --- | --- |
+| 联调检查 | `GET /api/health` |
 | 登录页 | `POST /api/auth/login` |
 | 注册页 | `POST /api/auth/register` |
 | 首页公告 | `GET /api/announcements` |
 | 首页推荐菜品 | `GET /api/dishes/recommendations?limit=6` |
 | 首页推荐食堂 | `GET /api/canteens?sort=rating` |
-| 美食广场 | `GET /api/canteens`、`GET /api/dishes` |
+| 美食广场 | `GET /api/canteens`、`GET /api/dishes`、`GET /api/dishes/tags` |
 | 食堂详情 | `GET /api/canteens/{id}` |
 | 菜品详情 | `GET /api/dishes/{id}` |
 | 写评价 | `POST /api/dishes/{dishId}/reviews` |
@@ -802,20 +852,21 @@ POST /api/admin/announcements
 | 我的收藏 | `GET /api/users/me/favorites` |
 | 收藏/取消收藏 | `POST /api/users/me/favorites`、`DELETE /api/users/me/favorites/{dishId}` |
 
-## 10. 前端优先接入顺序
+## 11. 前端优先接入顺序
 
 建议前端按这个顺序接，不容易乱：
 
-1. 登录/注册，保存 token。
-2. 首页公告、推荐菜品、推荐食堂。
-3. 美食广场食堂列表。
-4. 食堂详情页。
-5. 菜品详情页和评价列表。
-6. 写评价。
-7. 收藏和我的收藏。
-8. 补充菜品信息。
+1. `GET /api/health`，确认 Base URL 可用。
+2. 登录/注册，保存 token。
+3. 首页公告、推荐菜品、推荐食堂。
+4. 美食广场食堂列表、菜品列表、标签列表。
+5. 食堂详情页。
+6. 菜品详情页和评价列表。
+7. 写评价。
+8. 收藏和我的收藏。
+9. 补充菜品信息。
 
-## 11. 联调注意事项
+## 12. 联调注意事项
 
 - Android 真机访问后端时，Base URL 必须是后端电脑局域网 IP，不是 `localhost`。
 - 请求失败时先看 `code` 和 `message`，再看后端控制台日志。
