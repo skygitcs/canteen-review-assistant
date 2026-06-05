@@ -5,6 +5,7 @@ import edu.thu.canteen.domain.entity.Announcement;
 import edu.thu.canteen.domain.entity.Dish;
 import edu.thu.canteen.domain.entity.DishSubmission;
 import edu.thu.canteen.dto.AdminDtos;
+import edu.thu.canteen.dto.DishDtos;
 import edu.thu.canteen.service.AnnouncementService;
 import edu.thu.canteen.service.DishService;
 import jakarta.validation.Valid;
@@ -26,7 +27,7 @@ public class AdminController {
     }
 
     @GetMapping("/submissions")
-    public ApiResponse<List<DishSubmission>> pendingSubmissions() {
+    public ApiResponse<List<DishDtos.DishSubmissionView>> pendingSubmissions() {
         return ApiResponse.ok(dishService.pendingSubmissions());
     }
 

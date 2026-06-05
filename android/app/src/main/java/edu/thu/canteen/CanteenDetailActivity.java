@@ -34,13 +34,15 @@ public class CanteenDetailActivity extends AppCompatActivity {
     public static final String EXTRA_CANTEEN_ID = "extra_canteen_id";
     private static final String TAG = "CanteenDetail";
 
-    private String activeFloorLabel = "";
-    private String activeWindowName = "";
+    // Defaults to first available floor and "All Windows" of that floor
+    private String activeFloorLabel = ""; 
+    private String activeWindowName = "\u5168\u90e8\u7a97\u53e3";
     private String query = "";
     
     private final List<Dish> allDishes = new ArrayList<>();
     private final List<CanteenDtos.WindowDto> allWindowsData = new ArrayList<>();
     private DishAdapter dishAdapter;
+    private CategoryAdapter floorAdapter;
     private Canteen canteen;
     private long canteenId;
 
@@ -81,7 +83,11 @@ public class CanteenDetailActivity extends AppCompatActivity {
             if (canteen != null) FormDialogs.showSupplementDialog(this, canteen, this::fetchData);
         });
         findViewById(R.id.crowd_report_button).setOnClickListener(v -> reportCrowd());
+    }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
         fetchData();
     }
 
@@ -120,7 +126,6 @@ public class CanteenDetailActivity extends AppCompatActivity {
     }
 
     private void setupFilters() {
-        // 1. Get unique floors from window data (No "All" option)
         Set<Integer> floorSet = new HashSet<>();
         for (CanteenDtos.WindowDto w : allWindowsData) floorSet.add(w.floorNo);
         List<Integer> sortedFloors = new ArrayList<>(floorSet);
@@ -131,47 +136,55 @@ public class CanteenDetailActivity extends AppCompatActivity {
         
         if (floorLabels.isEmpty()) return;
 
-        // 2. Setup Floor List
+        // Preserve current selection if possible, otherwise default to first floor
+        int selectedIdx = floorLabels.indexOf(activeFloorLabel);
+        if (selectedIdx < 0) {
+            selectedIdx = 0;
+            activeFloorLabel = floorLabels.get(0);
+        }
+
         RecyclerView floorList = findViewById(R.id.floor_list);
         floorList.setLayoutManager(new LinearLayoutManager(this));
-        activeFloorLabel = floorLabels.get(0); // Default to first floor
-        
-        CategoryAdapter floorAdapter = new CategoryAdapter(floorLabels, label -> {
+        floorAdapter = new CategoryAdapter(floorLabels, label -> {
             activeFloorLabel = label;
+            activeWindowName = "\u5168\u90e8\u7a97\u53e3"; // Reset window when floor changes
             updateWindowSpinner();
         });
+        floorAdapter.setSelectedIndex(selectedIdx);
         floorList.setAdapter(floorAdapter);
         
-        // 3. Initial update of window spinner
         updateWindowSpinner();
     }
 
     private void updateWindowSpinner() {
         Spinner windowSpinner = findViewById(R.id.window_spinner);
-        int currentFloor = Integer.parseInt(activeFloorLabel.replace("\u697c", ""));
+        int currentFloor = 0;
+        try { currentFloor = Integer.parseInt(activeFloorLabel.replace("\u697c", "")); } catch (Exception e) {}
         
         List<String> windowsOnFloor = new ArrayList<>();
+        windowsOnFloor.add("\u5168\u90e8\u7a97\u53e3");
         for (CanteenDtos.WindowDto w : allWindowsData) {
             if (w.floorNo == currentFloor) {
                 windowsOnFloor.add(w.name);
             }
         }
         
-        if (windowsOnFloor.isEmpty()) {
-            activeWindowName = "";
-        } else {
+        // Preserve current selection if possible, otherwise default to "All Windows"
+        int selectedIdx = windowsOnFloor.indexOf(activeWindowName);
+        if (selectedIdx < 0) {
+            selectedIdx = 0;
             activeWindowName = windowsOnFloor.get(0);
         }
 
         ArrayAdapter<String> windowAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, windowsOnFloor);
         windowAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         windowSpinner.setAdapter(windowAdapter);
+        windowSpinner.setSelection(selectedIdx);
         windowSpinner.setOnItemSelectedListener(new SimpleItemSelectedListener(value -> {
             activeWindowName = value;
             applyFilters();
         }));
         
-        // Trigger initial filter for the first window
         applyFilters();
     }
 
@@ -183,16 +196,18 @@ public class CanteenDetailActivity extends AppCompatActivity {
         try { currentFloor = Integer.parseInt(activeFloorLabel.replace("\u697c", "")); } catch (Exception e) {}
 
         for (Dish dish : allDishes) {
-            // Strict match: Floor must match AND Window must match
             boolean matchesFloor = (dish.floorNo == currentFloor);
-            boolean matchesWindow = (dish.windowName != null && dish.windowName.equals(activeWindowName));
+            boolean matchesWindow = activeWindowName.equals("\u5168\u90e8\u7a97\u53e3") 
+                    || (dish.windowName != null && dish.windowName.equals(activeWindowName));
             boolean matchesQuery = query.isEmpty() || (dish.name != null && dish.name.toLowerCase().contains(query.toLowerCase()));
             
             if (matchesFloor && matchesWindow && matchesQuery) {
                 filtered.add(dish);
             }
         }
+        
         dishAdapter.replaceItems(filtered);
+        Log.d(TAG, "Filtered dishes: " + filtered.size() + " out of " + allDishes.size());
     }
 
     private void reportCrowd() {

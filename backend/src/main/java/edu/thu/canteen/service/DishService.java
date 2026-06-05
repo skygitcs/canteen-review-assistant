@@ -142,10 +142,11 @@ public class DishService {
         submissionMapper.updateById(submission);
     }
 
-    public List<DishSubmission> pendingSubmissions() {
+    public List<DishDtos.DishSubmissionView> pendingSubmissions() {
         return submissionMapper.selectList(Wrappers.<DishSubmission>lambdaQuery()
                 .eq(DishSubmission::getAuditStatus, "PENDING")
-                .orderByAsc(DishSubmission::getCreatedAt));
+                .orderByAsc(DishSubmission::getCreatedAt))
+                .stream().map(dishViewService::submissionView).toList();
     }
 
     private Dish approvedDish(Long dishId) {
