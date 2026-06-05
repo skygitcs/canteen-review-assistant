@@ -10,38 +10,67 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <Button
-            android:id="@+id/batch_upload_button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Batch upload"
-            android:textAllCaps="false" />
-
+        <!-- Post Announcement Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Pending Submissions"
+            android:text="&#x53d1;&#x5e03;&#x516c;&#x544a;"
             android:textStyle="bold"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="@color/gray_700" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_card_light"
+            android:padding="12dp">
+
+            <EditText
+                android:id="@+id/admin_announce_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="&#x516c;&#x544a;&#x6807;&#x9898;"
+                android:textSize="14sp"
+                android:background="@drawable/bg_input"
+                android:padding="10dp" />
+
+            <EditText
+                android:id="@+id/admin_announce_content"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:hint="&#x516c;&#x544a;&#x5185;&#x5bb9;"
+                android:textSize="14sp"
+                android:minLines="2"
+                android:gravity="top"
+                android:background="@drawable/bg_input"
+                android:padding="10dp" />
+
+            <Button
+                android:id="@+id/admin_post_announce_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="&#x53d1;&#x5e03;&#x516c;&#x544a;"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/gray_900"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- Pending Submissions -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="&#x5f85;&#x5ba1;&#x6838;&#x83dc;&#x54c1;"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/gray_700" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/submission_list"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:nestedScrollingEnabled="false" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Support Tickets"
-            android:textStyle="bold"
-            android:textSize="14sp" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/support_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"

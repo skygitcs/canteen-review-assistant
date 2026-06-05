@@ -41,12 +41,7 @@ public class CanteenAdapter extends RecyclerView.Adapter<CanteenAdapter.ViewHold
         holder.rating.setText(String.format("%.1f", item.avgRating));
         holder.crowd.setText(String.format("%.1f", item.crowdLevel));
         UiUtils.bindTags(holder.tags, item.tags);
-        if (item.coverUrl == null || item.coverUrl.isEmpty()) {
-            holder.cover.setImageDrawable(null);
-            holder.cover.setBackgroundResource(R.drawable.bg_image_placeholder);
-        } else {
-            Glide.with(holder.cover.getContext()).load(item.coverUrl).into(holder.cover);
-        }
+        UiUtils.loadImage(holder.cover, item.coverUrl, item.id, "canteen");
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 

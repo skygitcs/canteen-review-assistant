@@ -53,6 +53,32 @@
                     android:textSize="12sp"
                     android:textColor="@color/purple_700" />
             </LinearLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/edit_profile_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="&#x7f16;&#x8f91;"
+                android:textColor="@color/purple_500"
+                android:textSize="13sp"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackground" />
+
+            <TextView
+                android:id="@+id/account_action_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="\u2699"
+                android:textColor="@color/gray_500"
+                android:textSize="18sp"
+                android:padding="8dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackground" />
         </LinearLayout>
 
         <TextView
@@ -88,14 +114,15 @@
             android:nestedScrollingEnabled="false" />
 
         <Button
-            android:id="@+id/support_button"
+            android:id="@+id/admin_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="&#x7559;&#x8a00;"
+            android:layout_marginTop="24dp"
+            android:text="&#x8FDB;&#x5165;&#x7BA1;&#x7406;&#x540E;&#x53F0;"
             android:textAllCaps="false"
-            android:backgroundTint="@color/gray_900"
-            android:textColor="@color/white" />
+            android:backgroundTint="@color/purple_700"
+            android:textColor="@color/white"
+            android:visibility="gone" />
     </LinearLayout>
 </ScrollView>
 

@@ -6,13 +6,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import edu.thu.canteen.data.model.Canteen;
+import edu.thu.canteen.data.network.CanteenDtos;
 import java.util.List;
 
 public class HeatAdapter extends RecyclerView.Adapter<HeatAdapter.ViewHolder> {
-    private final List<Canteen> items;
+    private final List<CanteenDtos.HeatPoint> items;
 
-    public HeatAdapter(List<Canteen> items) {
+    public HeatAdapter(List<CanteenDtos.HeatPoint> items) {
         this.items = items;
     }
 
@@ -26,10 +26,11 @@ public class HeatAdapter extends RecyclerView.Adapter<HeatAdapter.ViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Canteen item = items.get(position);
-        holder.name.setText(item.name);
-        holder.value.setText(String.format("Heat %.1f", item.crowdLevel));
-        int height = (int) (16 + item.crowdLevel * 18);
+        CanteenDtos.HeatPoint item = items.get(position);
+        holder.name.setText(item.canteenName);
+        holder.value.setText(String.format("Heat %d", item.visits));
+        // Scale height based on visits (max out at some reasonable value)
+        int height = (int) (16 + Math.min(item.visits, 10) * 18);
         ViewGroup.LayoutParams params = holder.heatBar.getLayoutParams();
         params.height = height;
         holder.heatBar.setLayoutParams(params);

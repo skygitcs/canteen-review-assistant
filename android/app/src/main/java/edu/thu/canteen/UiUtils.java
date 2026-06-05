@@ -3,7 +3,9 @@ package edu.thu.canteen;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.widget.ImageView;
 import android.widget.Toast;
+import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.List;
 public class UiUtils {
     public static void bindTags(ChipGroup group, List<String> tags) {
         group.removeAllViews();
+        if (tags == null) return;
         for (String tag : tags) {
             Chip chip = new Chip(group.getContext());
             chip.setText(tag);
@@ -65,5 +68,15 @@ public class UiUtils {
 
     public static void toast(Context context, String message) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+    }
+
+    public static void loadImage(ImageView imageView, String url, long seed, String type) {
+        if (url != null && !url.isEmpty()) {
+            Glide.with(imageView.getContext()).load(url).into(imageView);
+        } else {
+            // Fallback to a high-quality placeholder based on seed and type
+            String fallbackUrl = String.format("https://picsum.photos/seed/%s%d/800/600", type, seed);
+            Glide.with(imageView.getContext()).load(fallbackUrl).into(imageView);
+        }
     }
 }

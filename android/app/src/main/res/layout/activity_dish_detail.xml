@@ -36,9 +36,15 @@
             android:textSize="15sp"
             android:textColor="@color/gray_900" />
 
-        <Space
+        <TextView
+            android:id="@+id/dish_favorite"
             android:layout_width="40dp"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="\u2661"
+            android:textColor="@color/gray_900"
+            android:textSize="24sp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
 
     <ScrollView
@@ -95,6 +101,18 @@
                 android:layout_height="wrap_content"
                 android:textSize="12sp"
                 android:textColor="@color/gray_600" />
+
+            <Button
+                android:id="@+id/dish_favorite_large"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="\u2661 \u6536\u85cf\u83dc\u54c1"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/white"
+                android:textColor="@color/gray_900"
+                app:strokeColor="@color/gray_200"
+                app:strokeWidth="1dp" />
 
             <Button
                 android:id="@+id/write_review_button"

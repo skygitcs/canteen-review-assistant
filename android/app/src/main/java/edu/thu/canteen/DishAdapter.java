@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.ChipGroup;
@@ -40,12 +41,17 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
         holder.window.setText(item.floorNo + "\u697c \u00b7 " + item.windowName);
         holder.price.setText(String.format("\u00a5%.2f", item.price));
         UiUtils.bindTags(holder.tags, item.tags);
-        if (item.imageUrl == null || item.imageUrl.isEmpty()) {
-            holder.cover.setImageDrawable(null);
-            holder.cover.setBackgroundResource(R.drawable.bg_image_placeholder);
-        } else {
-            Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
-        }
+        UiUtils.loadImage(holder.cover, item.imageUrl, item.id, "dish");
+        
+        // Click cover to zoom
+        holder.cover.setOnClickListener(v -> {
+            if (v.getContext() instanceof FragmentActivity) {
+                String finalUrl = (item.imageUrl != null && !item.imageUrl.isEmpty()) 
+                    ? item.imageUrl 
+                    : String.format("https://picsum.photos/seed/dish%d/800/600", item.id);
+                ImageViewerDialog.show((FragmentActivity) v.getContext(), finalUrl);
+            }
+        });
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
     }
 

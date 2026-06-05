@@ -7,14 +7,21 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import edu.thu.canteen.data.model.AdminSubmission;
+import edu.thu.canteen.data.model.DishSubmission;
 import java.util.List;
 
 public class SubmissionAdapter extends RecyclerView.Adapter<SubmissionAdapter.ViewHolder> {
-    private final List<AdminSubmission> items;
+    public interface OnActionClick {
+        void onApprove(DishSubmission submission);
+        void onReject(DishSubmission submission);
+    }
 
-    public SubmissionAdapter(List<AdminSubmission> items) {
+    private final List<DishSubmission> items;
+    private final OnActionClick listener;
+
+    public SubmissionAdapter(List<DishSubmission> items, OnActionClick listener) {
         this.items = items;
+        this.listener = listener;
     }
 
     @NonNull
@@ -27,11 +34,17 @@ public class SubmissionAdapter extends RecyclerView.Adapter<SubmissionAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        AdminSubmission item = items.get(position);
+        DishSubmission item = items.get(position);
         holder.name.setText(item.name);
-        holder.canteen.setText(item.canteenName);
-        holder.approve.setOnClickListener(v -> UiUtils.toast(holder.itemView.getContext(), "Approve"));
-        holder.reject.setOnClickListener(v -> UiUtils.toast(holder.itemView.getContext(), "Reject"));
+        
+        String cName = item.canteenName != null ? item.canteenName : "\u98df\u5802ID:" + item.canteenId;
+        String wName = item.windowName != null ? item.windowName : "\u7a97\u53e3ID:" + item.windowId;
+        int floor = item.floorNo > 0 ? item.floorNo : 0; // Default to 0 if not returned
+        
+        holder.canteen.setText(String.format("%s - %d\u697c %s (\u00a5%.2f)", 
+                cName, floor, wName, item.price));
+        holder.approve.setOnClickListener(v -> listener.onApprove(item));
+        holder.reject.setOnClickListener(v -> listener.onReject(item));
     }
 
     @Override
