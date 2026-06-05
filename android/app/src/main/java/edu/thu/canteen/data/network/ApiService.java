@@ -17,7 +17,7 @@ public interface ApiService {
 
     // Announcements
     @GET("api/announcements")
-    Call<ApiResponse<List<Object>>> getAnnouncements(); // Use Object for now as we don't have a full model
+    Call<ApiResponse<List<CanteenDtos.AnnouncementDto>>> getAnnouncements();
 
     // Canteens
     @GET("api/canteens")
@@ -37,6 +37,9 @@ public interface ApiService {
 
     @POST("api/canteens/{id}/crowd")
     Call<ApiResponse<Void>> reportCrowd(@Path("id") long id, @Body CanteenDtos.CrowdRequest request);
+
+    @GET("api/canteens/heatmap")
+    Call<ApiResponse<List<CanteenDtos.HeatPoint>>> getHeatmap(@Query("scope") String scope);
 
     // Dishes
     @GET("api/dishes")
@@ -79,4 +82,17 @@ public interface ApiService {
 
     @DELETE("api/users/me/favorites/{dishId}")
     Call<ApiResponse<Void>> removeFavorite(@Path("dishId") long dishId);
+
+    // Admin
+    @GET("api/admin/submissions")
+    Call<ApiResponse<List<edu.thu.canteen.data.model.DishSubmission>>> getPendingSubmissions();
+
+    @POST("api/admin/submissions/{id}/approve")
+    Call<ApiResponse<Object>> approveSubmission(@Path("id") long id, @Body AdminDtos.AuditRequest request);
+
+    @POST("api/admin/submissions/{id}/reject")
+    Call<ApiResponse<Object>> rejectSubmission(@Path("id") long id, @Body AdminDtos.AuditRequest request);
+
+    @POST("api/admin/announcements")
+    Call<ApiResponse<Object>> createAnnouncement(@Body AdminDtos.AnnouncementRequest request);
 }

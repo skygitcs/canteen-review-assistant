@@ -1,17 +1,22 @@
 package edu.thu.canteen.data.model;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.List;
 
-public class Dish {
+public class DishSubmission {
     @SerializedName("id")
     public final long id;
+    
+    @SerializedName("submitterId")
+    public final long submitterId;
     
     @SerializedName("canteenId")
     public final long canteenId;
     
     @SerializedName("windowId")
     public final long windowId;
+    
+    @SerializedName("name")
+    public final String name;
     
     @SerializedName("canteenName")
     public final String canteenName;
@@ -22,41 +27,28 @@ public class Dish {
     @SerializedName("floorNo")
     public final int floorNo;
     
-    @SerializedName("name")
-    public final String name;
-    
-    @SerializedName("imageUrl")
-    public final String imageUrl;
+    @SerializedName("auditStatus")
+    public final String auditStatus;
     
     @SerializedName("price")
     public final double price;
     
     @SerializedName("description")
     public final String description;
-    
-    @SerializedName("spiceLevel")
-    public final int spiceLevel;
-    
-    @SerializedName("tags")
-    public final List<String> tags;
-    
-    public final String category; // Client-side only for now
 
-    public Dish(long id, long canteenId, long windowId, String canteenName, String windowName, int floorNo,
-                String name, String imageUrl, double price, String description, int spiceLevel,
-                List<String> tags, String category) {
+    public DishSubmission(long id, long submitterId, long canteenId, long windowId, 
+                          String name, String canteenName, String windowName, int floorNo,
+                          String auditStatus, double price, String description) {
         this.id = id;
+        this.submitterId = submitterId;
         this.canteenId = canteenId;
         this.windowId = windowId;
+        this.name = name;
         this.canteenName = canteenName;
         this.windowName = windowName;
         this.floorNo = floorNo;
-        this.name = name;
-        this.imageUrl = imageUrl;
+        this.auditStatus = auditStatus;
         this.price = price;
         this.description = description;
-        this.spiceLevel = spiceLevel;
-        this.tags = tags;
-        this.category = category;
     }
 }

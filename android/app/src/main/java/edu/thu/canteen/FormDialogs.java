@@ -37,6 +37,40 @@ public class FormDialogs {
         void onSubmit(int level);
     }
 
+    public interface ProfileEditListener {
+        void onUpdate(String nickname, String tastePreference);
+    }
+
+    public static void showEditProfileDialog(Context context, edu.thu.canteen.data.model.UserProfile current, ProfileEditListener listener) {
+        LinearLayout form = createForm(context);
+        TextView title = title(context, "\u7f16\u8f91\u4e2a\u4eba\u8d44\u6599");
+        EditText nicknameInput = input(context, "\u6635\u79f0");
+        nicknameInput.setText(current.nickname);
+        EditText preferenceInput = input(context, "\u53e3\u5473\u504f\u597d");
+        preferenceInput.setText(current.tastePreference);
+
+        form.addView(title);
+        form.addView(label(context, "\u6635\u79f0"));
+        form.addView(nicknameInput);
+        form.addView(label(context, "\u53e3\u5473\u504f\u597d"));
+        form.addView(preferenceInput);
+
+        AlertDialog dialog = new AlertDialog.Builder(context)
+                .setView(form)
+                .setNegativeButton("\u53d6\u6d88", null)
+                .setPositiveButton("\u4fdd\u5b58", (d, which) -> {
+                    String nickname = nicknameInput.getText().toString().trim();
+                    String preference = preferenceInput.getText().toString().trim();
+                    if (nickname.isEmpty()) {
+                        UiUtils.toast(context, "\u6635\u79f0\u4e0d\u80fd\u4e3a\u7a7a");
+                        return;
+                    }
+                    listener.onUpdate(nickname, preference);
+                })
+                .show();
+        widen(dialog);
+    }
+
     public static void showSupplementDialog(Context context, Canteen canteen, SupplementSubmitListener listener) {
         NetworkClient.getService().getCanteenDetail(canteen.id, null, null, null).enqueue(new Callback<ApiResponse<CanteenDtos.CanteenDetailResponse>>() {
             @Override
@@ -72,6 +106,11 @@ public class FormDialogs {
         EditText descriptionInput = input(context, "\u8865\u5145\u8bf4\u660e");
         EditText tagsInput = input(context, "\u6807\u7b7e\uff0c\u7528\u7a7a\u683c\u6216\u9017\u53f7\u5206\u9694");
         
+        TextView spiceLabel = label(context, "\u8fa3\u5ea6 (0-5)");
+        android.widget.SeekBar spiceSeekBar = new android.widget.SeekBar(context);
+        spiceSeekBar.setMax(5);
+        spiceSeekBar.setProgress(0);
+
         form.addView(title);
         form.addView(windowLabel);
         form.addView(windowSpinner);
@@ -79,6 +118,8 @@ public class FormDialogs {
         form.addView(priceInput);
         form.addView(descriptionInput);
         form.addView(tagsInput);
+        form.addView(spiceLabel);
+        form.addView(spiceSeekBar);
 
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setView(form)
@@ -96,7 +137,7 @@ public class FormDialogs {
 
                     Dish newDish = new Dish(
                         0, data.base.id, selectedWindow.id, data.base.name, selectedWindow.name, selectedWindow.floorNo,
-                        name, "", price, descriptionInput.getText().toString(),
+                        name, "", price, descriptionInput.getText().toString(), spiceSeekBar.getProgress(),
                         Arrays.asList(tagsInput.getText().toString().split("[,\\s]+")), "\u70ed\u83dc"
                     );
                     
@@ -200,7 +241,6 @@ public class FormDialogs {
         renderStars(starViews, rating[0]);
 
         EditText content = input(context, "\u5199\u4e0b\u4f60\u7684\u8bc4\u4ef7");
-        EditText tags = input(context, "\u6807\u7b7e\uff0c\u4f8b\u5982 \u6e05\u6de1 \u4e0b\u996d");
         Button upload = softButton(context, "\u4e0a\u4f20\u56fe\u7247");
         upload.setOnClickListener(v -> {
             uploadedUrl[0] = "https://picsum.photos/seed/upload" + System.currentTimeMillis() + "/800/600";
@@ -212,7 +252,6 @@ public class FormDialogs {
         form.addView(ratingLabel);
         form.addView(stars);
         form.addView(content);
-        form.addView(tags);
         form.addView(upload);
 
         AlertDialog dialog = new AlertDialog.Builder(context)

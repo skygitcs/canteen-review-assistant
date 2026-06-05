@@ -4,26 +4,25 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.model.Canteen;
 import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.network.ApiResponse;
 import edu.thu.canteen.data.network.CanteenDtos;
 import edu.thu.canteen.data.network.NetworkClient;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,11 +32,14 @@ import retrofit2.Response;
 
 public class CanteenDetailActivity extends AppCompatActivity {
     public static final String EXTRA_CANTEEN_ID = "extra_canteen_id";
+    private static final String TAG = "CanteenDetail";
 
-    private String activeFloor = "\u5168\u90e8";
-    private String activeWindow = "\u5168\u90e8\u7a97\u53e3";
+    private String activeFloorLabel = "";
+    private String activeWindowName = "";
     private String query = "";
-    private List<Dish> allDishes = new ArrayList<>();
+    
+    private final List<Dish> allDishes = new ArrayList<>();
+    private final List<CanteenDtos.WindowDto> allWindowsData = new ArrayList<>();
     private DishAdapter dishAdapter;
     private Canteen canteen;
     private long canteenId;
@@ -75,21 +77,10 @@ public class CanteenDetailActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        Button addDish = findViewById(R.id.add_dish_button);
-        addDish.setOnClickListener(v -> {
-            if (canteen != null) {
-                FormDialogs.showSupplementDialog(this, canteen, () -> {
-                    fetchData();
-                });
-            } else {
-                UiUtils.toast(this, "\u6b63\u5728\u52a0\u8f7d\u98df\u5802\u4fe1\u606f...");
-            }
+        findViewById(R.id.add_dish_button).setOnClickListener(v -> {
+            if (canteen != null) FormDialogs.showSupplementDialog(this, canteen, this::fetchData);
         });
-
-        Button crowdBtn = findViewById(R.id.crowd_report_button);
-        if (crowdBtn != null) {
-            crowdBtn.setOnClickListener(v -> reportCrowd());
-        }
+        findViewById(R.id.crowd_report_button).setOnClickListener(v -> reportCrowd());
 
         fetchData();
     }
@@ -103,75 +94,100 @@ public class CanteenDetailActivity extends AppCompatActivity {
                             CanteenDtos.CanteenDetailResponse detail = response.body().data;
                             canteen = detail.base;
                             bindCanteen(canteen);
+                            
                             allDishes.clear();
-                            allDishes.addAll(detail.dishes);
-                            applyFilters();
-                            setupFilters(detail);
+                            if (detail.dishes != null) allDishes.addAll(detail.dishes);
+                            
+                            allWindowsData.clear();
+                            if (detail.windows != null) allWindowsData.addAll(detail.windows);
+                            
+                            setupFilters();
                         }
                     }
                     @Override
-                    public void onFailure(Call<ApiResponse<CanteenDtos.CanteenDetailResponse>> call, Throwable t) {}
+                    public void onFailure(Call<ApiResponse<CanteenDtos.CanteenDetailResponse>> call, Throwable t) {
+                        UiUtils.toast(CanteenDetailActivity.this, "\u7f51\u7edc\u9519\u8bef");
+                    }
                 });
     }
 
     private void bindCanteen(Canteen canteen) {
-        ImageView cover = findViewById(R.id.canteen_cover);
-        TextView name = findViewById(R.id.canteen_name);
-        TextView address = findViewById(R.id.canteen_address);
-        TextView navTitle = findViewById(R.id.nav_title);
-        ChipGroup tags = findViewById(R.id.canteen_tags);
-
-        if (canteen.coverUrl == null || canteen.coverUrl.isEmpty()) {
-            cover.setImageDrawable(null);
-            cover.setBackgroundResource(R.drawable.bg_image_placeholder);
-        } else {
-            Glide.with(this).load(canteen.coverUrl).into(cover);
-        }
-        name.setText(canteen.name);
-        navTitle.setText(canteen.name);
-        address.setText(canteen.address);
-        UiUtils.bindTags(tags, canteen.tags);
+        UiUtils.loadImage(findViewById(R.id.canteen_cover), canteen.coverUrl, canteen.id, "canteen");
+        ((TextView)findViewById(R.id.canteen_name)).setText(canteen.name);
+        ((TextView)findViewById(R.id.nav_title)).setText(canteen.name);
+        ((TextView)findViewById(R.id.canteen_address)).setText(canteen.address);
+        UiUtils.bindTags(findViewById(R.id.canteen_tags), canteen.tags);
     }
 
-    private void setupFilters(CanteenDtos.CanteenDetailResponse data) {
+    private void setupFilters() {
+        // 1. Get unique floors from window data (No "All" option)
+        Set<Integer> floorSet = new HashSet<>();
+        for (CanteenDtos.WindowDto w : allWindowsData) floorSet.add(w.floorNo);
+        List<Integer> sortedFloors = new ArrayList<>(floorSet);
+        Collections.sort(sortedFloors);
+        
+        List<String> floorLabels = new ArrayList<>();
+        for (Integer f : sortedFloors) floorLabels.add(f + "\u697c");
+        
+        if (floorLabels.isEmpty()) return;
+
+        // 2. Setup Floor List
+        RecyclerView floorList = findViewById(R.id.floor_list);
+        floorList.setLayoutManager(new LinearLayoutManager(this));
+        activeFloorLabel = floorLabels.get(0); // Default to first floor
+        
+        CategoryAdapter floorAdapter = new CategoryAdapter(floorLabels, label -> {
+            activeFloorLabel = label;
+            updateWindowSpinner();
+        });
+        floorList.setAdapter(floorAdapter);
+        
+        // 3. Initial update of window spinner
+        updateWindowSpinner();
+    }
+
+    private void updateWindowSpinner() {
         Spinner windowSpinner = findViewById(R.id.window_spinner);
-        List<String> windows = new ArrayList<>();
-        windows.add("\u5168\u90e8\u7a97\u53e3");
-        for (CanteenDtos.WindowDto w : data.windows) {
-            windows.add(w.name);
+        int currentFloor = Integer.parseInt(activeFloorLabel.replace("\u697c", ""));
+        
+        List<String> windowsOnFloor = new ArrayList<>();
+        for (CanteenDtos.WindowDto w : allWindowsData) {
+            if (w.floorNo == currentFloor) {
+                windowsOnFloor.add(w.name);
+            }
         }
-        ArrayAdapter<String> windowAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, windows);
+        
+        if (windowsOnFloor.isEmpty()) {
+            activeWindowName = "";
+        } else {
+            activeWindowName = windowsOnFloor.get(0);
+        }
+
+        ArrayAdapter<String> windowAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, windowsOnFloor);
         windowAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         windowSpinner.setAdapter(windowAdapter);
         windowSpinner.setOnItemSelectedListener(new SimpleItemSelectedListener(value -> {
-            activeWindow = value;
+            activeWindowName = value;
             applyFilters();
         }));
-
-        RecyclerView floorList = findViewById(R.id.floor_list);
-        floorList.setLayoutManager(new LinearLayoutManager(this));
-        List<String> floors = new ArrayList<>();
-        floors.add("\u5168\u90e8");
-        Set<Integer> floorSet = new HashSet<>();
-        for (CanteenDtos.WindowDto w : data.windows) {
-            floorSet.add(w.floorNo);
-        }
-        for (Integer f : floorSet) floors.add(f + "\u697c");
         
-        floorList.setAdapter(new CategoryAdapter(floors, floor -> {
-            activeFloor = floor;
-            applyFilters();
-        }));
+        // Trigger initial filter for the first window
+        applyFilters();
     }
 
     private void applyFilters() {
         if (dishAdapter == null) return;
         List<Dish> filtered = new ArrayList<>();
+        
+        int currentFloor = 0;
+        try { currentFloor = Integer.parseInt(activeFloorLabel.replace("\u697c", "")); } catch (Exception e) {}
+
         for (Dish dish : allDishes) {
-            boolean matchesFloor = "\u5168\u90e8".equals(activeFloor) || activeFloor.equals(dish.floorNo + "\u697c");
-            boolean matchesWindow = "\u5168\u90e8\u7a97\u53e3".equals(activeWindow) || activeWindow.equals(dish.windowName);
-            boolean matchesQuery = query.isEmpty() || dish.name.contains(query);
+            // Strict match: Floor must match AND Window must match
+            boolean matchesFloor = (dish.floorNo == currentFloor);
+            boolean matchesWindow = (dish.windowName != null && dish.windowName.equals(activeWindowName));
+            boolean matchesQuery = query.isEmpty() || (dish.name != null && dish.name.toLowerCase().contains(query.toLowerCase()));
+            
             if (matchesFloor && matchesWindow && matchesQuery) {
                 filtered.add(dish);
             }
@@ -185,9 +201,7 @@ public class CanteenDetailActivity extends AppCompatActivity {
                     .enqueue(new Callback<ApiResponse<Void>>() {
                         @Override
                         public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                            if (response.isSuccessful()) {
-                                UiUtils.toast(CanteenDetailActivity.this, "\u4e0a\u62a5\u6210\u529f");
-                            }
+                            if (response.isSuccessful()) UiUtils.toast(CanteenDetailActivity.this, "\u4e0a\u62a5\u6210\u529f");
                         }
                         @Override
                         public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {}

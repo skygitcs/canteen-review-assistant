@@ -25,4 +25,20 @@ public class CanteenDtos {
             this.level = level;
         }
     }
+
+    public static class HeatPoint {
+        public Long canteenId;
+        public String canteenName;
+        public double latitude;
+        public double longitude;
+        public long visits;
+        public double amount;
+    }
+
+    public static class AnnouncementDto {
+        public long id;
+        public String title;
+        public String content;
+        public String createdAt;
+    }
 }

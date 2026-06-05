@@ -13,7 +13,6 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import com.bumptech.glide.Glide;
 import edu.thu.canteen.data.model.ActivityItem;
 import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.model.UserProfile;
@@ -30,10 +29,12 @@ public class ProfileFragment extends Fragment {
     private TextView name;
     private TextView username;
     private TextView preference;
+    private View adminButton;
     private FavoriteAdapter favoriteAdapter;
     private ActivityAdapter activityAdapter;
     private List<Dish> favoritesList = new ArrayList<>();
     private List<ActivityItem> activityItems = new ArrayList<>();
+    private UserProfile currentProfile;
 
     @Nullable
     @Override
@@ -45,6 +46,7 @@ public class ProfileFragment extends Fragment {
         name = view.findViewById(R.id.profile_name);
         username = view.findViewById(R.id.profile_username);
         preference = view.findViewById(R.id.profile_preference);
+        adminButton = view.findViewById(R.id.admin_button);
 
         RecyclerView activityListView = view.findViewById(R.id.activity_list);
         activityListView.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -68,10 +70,14 @@ public class ProfileFragment extends Fragment {
         });
         favoriteListView.setAdapter(favoriteAdapter);
 
-        view.findViewById(R.id.support_button).setOnClickListener(v ->
-                UiUtils.toast(requireContext(), "\u7559\u8a00\u5165\u53e3")
-        );
+        // Header and Settings
         view.findViewById(R.id.profile_header).setOnClickListener(v -> showAccountDialog());
+        view.findViewById(R.id.account_action_button).setOnClickListener(v -> showAccountDialog());
+        view.findViewById(R.id.edit_profile_button).setOnClickListener(v -> editProfile());
+        
+        adminButton.setOnClickListener(v -> {
+            startActivity(new Intent(requireContext(), AdminDashboardActivity.class));
+        });
 
         fetchData();
 
@@ -83,7 +89,9 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onResponse(Call<ApiResponse<UserProfile>> call, Response<ApiResponse<UserProfile>> response) {
                 if (isAdded() && response.isSuccessful() && response.body() != null && response.body().data != null) {
-                    bindProfile(response.body().data);
+                    currentProfile = response.body().data;
+                    bindProfile(currentProfile);
+                    updateActivities(); // Profile needed for username-based logging
                 }
             }
             @Override
@@ -97,12 +105,7 @@ public class ProfileFragment extends Fragment {
                     favoritesList.clear();
                     favoritesList.addAll(response.body().data);
                     favoriteAdapter.notifyDataSetChanged();
-
-                    activityItems.clear();
-                    for (Dish d : favoritesList) {
-                        activityItems.add(new edu.thu.canteen.data.model.ActivityItem("\u6536\u85cf\u4e86 " + d.name, ""));
-                    }
-                    activityAdapter.notifyDataSetChanged();
+                    updateActivities();
                 }
             }
             @Override
@@ -110,16 +113,56 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    private void bindProfile(UserProfile profile) {
-        if (profile.avatarUrl == null || profile.avatarUrl.isEmpty()) {
-            avatar.setImageDrawable(null);
-            avatar.setBackgroundResource(R.drawable.bg_image_placeholder);
-        } else {
-            Glide.with(requireContext()).load(profile.avatarUrl).into(avatar);
+    private void updateActivities() {
+        if (currentProfile == null) return;
+        activityItems.clear();
+        
+        // 1. Remote Favorites (Always synced with server)
+        for (Dish d : favoritesList) {
+            activityItems.add(new ActivityItem("\u6536\u85cf\u4e86\u83dc\u54c1\uff1a" + d.name, ""));
         }
+        
+        // 2. Account-Specific Local Activities (Likes, Reviews, Reports)
+        // We use username as key for isolation
+        String key = "local_act_" + currentProfile.username;
+        String data = requireContext().getSharedPreferences("canteen_prefs", 0).getString(key, "");
+        if (!data.isEmpty()) {
+            for (String act : data.split(";")) {
+                if (!act.isEmpty()) activityItems.add(new ActivityItem(act, ""));
+            }
+        }
+        
+        activityAdapter.notifyDataSetChanged();
+    }
+
+    private void bindProfile(UserProfile profile) {
+        UiUtils.loadImage(avatar, profile.avatarUrl, 0, "user");
         name.setText(profile.nickname);
         username.setText("@" + profile.username);
-        preference.setText(profile.tastePreference != null ? profile.tastePreference : "\u672a\u8bbe\u7f6e");
+        preference.setText(profile.tastePreference != null && !profile.tastePreference.isEmpty() 
+            ? profile.tastePreference : "\u672a\u8bbe\u7f6e\u53e3\u5473\u504f\u597d");
+        
+        adminButton.setVisibility("ADMIN".equals(profile.role) ? View.VISIBLE : View.GONE);
+    }
+
+    private void editProfile() {
+        if (currentProfile == null) return;
+        FormDialogs.showEditProfileDialog(requireContext(), currentProfile, (nickname, tastePreference) -> {
+            UserProfile updated = new UserProfile(currentProfile.username, nickname, tastePreference, currentProfile.avatarUrl, currentProfile.role);
+            NetworkClient.getService().updateProfile(updated).enqueue(new Callback<ApiResponse<UserProfile>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<UserProfile>> call, Response<ApiResponse<UserProfile>> response) {
+                    if (response.isSuccessful()) {
+                        UiUtils.toast(requireContext(), "\u4fee\u6531\u6210\u529f");
+                        fetchData();
+                    }
+                }
+                @Override
+                public void onFailure(Call<ApiResponse<UserProfile>> call, Throwable t) {
+                    UiUtils.toast(requireContext(), "\u7f51\u7edc\u9519\u8bef");
+                }
+            });
+        });
     }
 
     private void removeFavorite(Dish dish) {
@@ -129,6 +172,7 @@ public class ProfileFragment extends Fragment {
                 if (isAdded() && response.isSuccessful()) {
                     favoritesList.remove(dish);
                     favoriteAdapter.notifyDataSetChanged();
+                    updateActivities();
                     UiUtils.toast(requireContext(), "\u5df2\u53d6\u6d88\u6536\u85cf");
                 }
             }
@@ -138,16 +182,11 @@ public class ProfileFragment extends Fragment {
     }
 
     private void showAccountDialog() {
-        String[] actions = {
-                "\u5207\u6362\u8d26\u53f7",
-                "\u9000\u51fa\u767b\u5f55"
-        };
+        String[] actions = {"\u5207\u6362\u8d26\u53f7", "\u9000\u51fa\u767b\u5f55"};
         new AlertDialog.Builder(requireContext())
                 .setTitle("\u8d26\u53f7\u64cd\u4f5c")
                 .setItems(actions, (dialog, which) -> {
-                    if (which == 1) { // Logout
-                        NetworkClient.clearToken();
-                    }
+                    NetworkClient.clearToken();
                     Intent intent = new Intent(requireContext(), AuthActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);

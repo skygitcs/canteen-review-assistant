@@ -3,7 +3,7 @@ SET NAMES utf8mb4;
 USE thu_canteen;
 
 INSERT INTO users (id, username, password_hash, nickname, avatar_url, role, taste_preference, campus_card_authorized, status) VALUES
-(1, 'demo', '$2a$10$o6Js5uUIk.IlN5.vWnG7xuDgWYm77MtFeWT3x/Zha/20bN6THD99q', '清华吃饭人', NULL, 'USER', '清淡,少辣', 0, 1),
+(1, 'demo', '$2a$10$o6Js5uUIk.IlN5.vWnG7xuDgWYm77MtFeWT3x/Zha/20bN6THD99q', '超级管理员', NULL, 'ADMIN', '清淡,少辣', 0, 1),
 (2, 'reviewer', '$2a$10$o6Js5uUIk.IlN5.vWnG7xuDgWYm77MtFeWT3x/Zha/20bN6THD99q', '紫荆常客', NULL, 'USER', '辣味,下饭', 0, 1),
 (3, 'admin', '$2a$10$o6Js5uUIk.IlN5.vWnG7xuDgWYm77MtFeWT3x/Zha/20bN6THD99q', '管理员', NULL, 'ADMIN', NULL, 0, 1)
 ON DUPLICATE KEY UPDATE

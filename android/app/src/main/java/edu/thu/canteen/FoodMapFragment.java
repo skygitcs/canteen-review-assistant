@@ -20,6 +20,7 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.model.Canteen;
 import edu.thu.canteen.data.network.ApiResponse;
+import edu.thu.canteen.data.network.CanteenDtos;
 import edu.thu.canteen.data.network.NetworkClient;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,7 @@ import retrofit2.Response;
 public class FoodMapFragment extends Fragment {
     private List<Canteen> allCanteens = new ArrayList<>();
     private final List<Canteen> filtered = new ArrayList<>();
+    private final List<CanteenDtos.HeatPoint> heatPoints = new ArrayList<>();
     private CanteenAdapter canteenAdapter;
     private HeatAdapter heatAdapter;
     private String activeTag = "\u5168\u90e8";
@@ -71,7 +73,7 @@ public class FoodMapFragment extends Fragment {
         canteenList.setLayoutManager(new LinearLayoutManager(requireContext()));
         canteenList.setAdapter(canteenAdapter);
 
-        heatAdapter = new HeatAdapter(filtered);
+        heatAdapter = new HeatAdapter(heatPoints);
         heatList.setLayoutManager(new LinearLayoutManager(requireContext()));
         heatList.setAdapter(heatAdapter);
 
@@ -105,6 +107,19 @@ public class FoodMapFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<ApiResponse<List<Canteen>>> call, Throwable t) {}
+        });
+
+        NetworkClient.getService().getHeatmap("global").enqueue(new Callback<ApiResponse<List<CanteenDtos.HeatPoint>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<CanteenDtos.HeatPoint>>> call, Response<ApiResponse<List<CanteenDtos.HeatPoint>>> response) {
+                if (isAdded() && response.isSuccessful() && response.body() != null && response.body().data != null) {
+                    heatPoints.clear();
+                    heatPoints.addAll(response.body().data);
+                    if (heatAdapter != null) heatAdapter.notifyDataSetChanged();
+                }
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<List<CanteenDtos.HeatPoint>>> call, Throwable t) {}
         });
     }
 

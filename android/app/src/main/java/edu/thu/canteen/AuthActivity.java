@@ -82,7 +82,19 @@ public class AuthActivity extends AppCompatActivity {
                 startActivity(new Intent(AuthActivity.this, MainActivity.class));
                 finish();
             } else {
-                String msg = response.body() != null ? response.body().message : "\u8bf7\u6c42\u5931\u8d25";
+                String msg = "\u8bf7\u6c42\u5931\u8d25";
+                try {
+                    if (response.body() != null) {
+                        msg = response.body().message;
+                    } else if (response.errorBody() != null) {
+                        // Parse error body manually
+                        String errorJson = response.errorBody().string();
+                        ApiResponse<?> errorResp = new com.google.gson.Gson().fromJson(errorJson, ApiResponse.class);
+                        if (errorResp != null) msg = errorResp.message;
+                    }
+                } catch (Exception e) {
+                    msg = "\u534f\u8bae\u89e3\u6790\u9519\u8bef";
+                }
                 UiUtils.toast(AuthActivity.this, msg);
             }
         }

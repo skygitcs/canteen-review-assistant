@@ -39,12 +39,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         holder.name.setText(item.name);
         holder.canteen.setText(item.canteenName);
         holder.price.setText(String.format("\u00a5%.2f", item.price));
-        if (item.imageUrl == null || item.imageUrl.isEmpty()) {
-            holder.cover.setImageDrawable(null);
-            holder.cover.setBackgroundResource(R.drawable.bg_image_placeholder);
-        } else {
-            Glide.with(holder.cover.getContext()).load(item.imageUrl).into(holder.cover);
-        }
+        UiUtils.loadImage(holder.cover, item.imageUrl, item.id, "dish");
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
         holder.delete.setOnClickListener(v -> listener.onDelete(item));
     }

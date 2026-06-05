@@ -168,6 +168,9 @@ public class DishDetailActivity extends AppCompatActivity {
                     public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
                         if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                             UiUtils.toast(DishDetailActivity.this, "\u8bc4\u4ef7\u5df2\u53d1\u5e03");
+                            if (currentDish != null) {
+                                NetworkClient.addLocalActivity("\u53d1\u5e03\u4e86\u8bc4\u4ef7\uff1a" + currentDish.name);
+                            }
                             // Add locally for immediate feedback
                             reviewAdapter.addReview(new Review(System.currentTimeMillis(), dishId,
                                     "\u6211", rating, content, imageUrl, 0, 0, 0));

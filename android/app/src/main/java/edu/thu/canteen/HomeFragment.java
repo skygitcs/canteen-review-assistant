@@ -2,32 +2,48 @@ package edu.thu.canteen;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.model.Canteen;
 import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.network.ApiResponse;
+import edu.thu.canteen.data.network.CanteenDtos;
 import edu.thu.canteen.data.network.NetworkClient;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
-    private LinearLayout announcementList;
+    private ViewPager2 announcementPager;
+    private final List<CanteenDtos.AnnouncementDto> announcements = new ArrayList<>();
+    private AnnouncementAdapter announcementAdapter;
+    private final Handler autoScrollHandler = new Handler(Looper.getMainLooper());
+    private final Runnable autoScrollRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (announcements.size() > 1) {
+                int next = (announcementPager.getCurrentItem() + 1) % announcements.size();
+                announcementPager.setCurrentItem(next, true);
+                autoScrollHandler.postDelayed(this, 3000);
+            }
+        }
+    };
+
     private ImageView recommendCover;
     private TextView recommendName;
     private TextView recommendAddress;
@@ -43,7 +59,11 @@ public class HomeFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        announcementList = view.findViewById(R.id.announcement_list);
+        announcementPager = view.findViewById(R.id.announcement_pager);
+        announcementPager.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
+        announcementAdapter = new AnnouncementAdapter(announcements);
+        announcementPager.setAdapter(announcementAdapter);
+
         recommendCover = view.findViewById(R.id.recommend_cover);
         recommendName = view.findViewById(R.id.recommend_name);
         recommendAddress = view.findViewById(R.id.recommend_address);
@@ -64,32 +84,41 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        autoScrollHandler.removeCallbacks(autoScrollRunnable);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (announcements.size() > 1) {
+            autoScrollHandler.postDelayed(autoScrollRunnable, 3000);
+        }
+    }
+
     private void fetchData() {
         // Announcements
-        NetworkClient.getService().getAnnouncements().enqueue(new Callback<ApiResponse<List<Object>>>() {
+        NetworkClient.getService().getAnnouncements().enqueue(new Callback<ApiResponse<List<CanteenDtos.AnnouncementDto>>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<Object>>> call, Response<ApiResponse<List<Object>>> response) {
+            public void onResponse(Call<ApiResponse<List<CanteenDtos.AnnouncementDto>>> call, Response<ApiResponse<List<CanteenDtos.AnnouncementDto>>> response) {
                 if (isAdded() && response.isSuccessful() && response.body() != null && response.body().data != null) {
-                    List<String> contents = new ArrayList<>();
-                    for (Object obj : response.body().data) {
-                        if (obj instanceof Map) {
-                            contents.add((String) ((Map<?, ?>) obj).get("content"));
-                        }
-                    }
-                    if (!contents.isEmpty()) {
-                        announcementList.removeAllViews();
-                        TextView tv = (TextView) getLayoutInflater().inflate(R.layout.item_announcement, announcementList, false);
-                        tv.setText(String.join("    \u00b7    ", contents));
-                        tv.setSelected(true);
-                        announcementList.addView(tv);
+                    announcements.clear();
+                    announcements.addAll(response.body().data);
+                    announcementAdapter.notifyDataSetChanged();
+                    
+                    autoScrollHandler.removeCallbacks(autoScrollRunnable);
+                    if (announcements.size() > 1) {
+                        autoScrollHandler.postDelayed(autoScrollRunnable, 3000);
                     }
                 }
             }
             @Override
-            public void onFailure(Call<ApiResponse<List<Object>>> call, Throwable t) {}
+            public void onFailure(Call<ApiResponse<List<CanteenDtos.AnnouncementDto>>> call, Throwable t) {}
         });
 
-        // Recommended Canteen (Get first from list for now)
+        // Recommended Canteen
         NetworkClient.getService().getCanteens(null, null, "rating").enqueue(new Callback<ApiResponse<List<Canteen>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Canteen>>> call, Response<ApiResponse<List<Canteen>>> response) {
@@ -117,12 +146,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void bindCanteen(Canteen canteen) {
-        if (canteen.coverUrl == null || canteen.coverUrl.isEmpty()) {
-            recommendCover.setImageDrawable(null);
-            recommendCover.setBackgroundResource(R.drawable.bg_image_placeholder);
-        } else {
-            Glide.with(this).load(canteen.coverUrl).into(recommendCover);
-        }
+        UiUtils.loadImage(recommendCover, canteen.coverUrl, canteen.id, "canteen");
         recommendName.setText(canteen.name);
         recommendAddress.setText(canteen.address);
         recommendRating.setText(String.format("\u8bc4\u5206 %.1f", canteen.avgRating));

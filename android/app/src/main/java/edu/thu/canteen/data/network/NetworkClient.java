@@ -60,4 +60,25 @@ public class NetworkClient {
     public static void clearToken() {
         prefs.edit().remove(KEY_TOKEN).apply();
     }
+
+    public static void addLocalActivity(String content) {
+        String existing = prefs.getString("local_activities", "");
+        String updated = content + ";" + existing;
+        // Keep only last 20 activities
+        String[] parts = updated.split(";");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < Math.min(parts.length, 20); i++) {
+            if (!parts[i].isEmpty()) sb.append(parts[i]).append(";");
+        }
+        prefs.edit().putString("local_activities", sb.toString()).apply();
+    }
+
+    public static java.util.List<String> getLocalActivities() {
+        String data = prefs.getString("local_activities", "");
+        return java.util.Arrays.asList(data.split(";"));
+    }
+
+    public static void clearLocalActivities() {
+        prefs.edit().remove("local_activities").apply();
+    }
 }

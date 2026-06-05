@@ -75,12 +75,23 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     }
 
     private void handleVote(long reviewId, int vote) {
+        Review item = null;
+        for (Review r : items) if (r.id == reviewId) { item = r; break; }
+        final Review finalItem = item;
+
         NetworkClient.getService().voteReview(reviewId, new DishDtos.VoteRequest(vote))
                 .enqueue(new Callback<ApiResponse<Object>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
-                        if (response.isSuccessful() && refreshTrigger != null) {
-                            refreshTrigger.run(); // Reload from server to get accurate counts
+                        if (response.isSuccessful()) {
+                            if (vote != 0 && finalItem != null) {
+                                String action = vote == 1 ? "\u70b9\u8d5e\u4e86\u8bc4\u4ef7\uff1a" : "\u70b9\u8e29\u4e86\u8bc4\u4ef7\uff1a";
+                                String desc = finalItem.content.length() > 10 ? finalItem.content.substring(0, 10) + "..." : finalItem.content;
+                                NetworkClient.addLocalActivity(action + desc);
+                            }
+                            if (refreshTrigger != null) {
+                                refreshTrigger.run(); // Reload from server to get accurate counts
+                            }
                         }
                     }
                     @Override
