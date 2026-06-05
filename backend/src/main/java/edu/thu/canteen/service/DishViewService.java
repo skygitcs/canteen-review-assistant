@@ -64,6 +64,33 @@ public class DishViewService {
         );
     }
 
+    public DishDtos.DishSubmissionView submissionView(DishSubmission submission) {
+        User user = userMapper.selectById(submission.getSubmitterId());
+        Canteen canteen = canteenMapper.selectById(submission.getCanteenId());
+        CanteenWindow window = submission.getWindowId() == null ? null : windowMapper.selectById(submission.getWindowId());
+        List<String> tags = submission.getTags() == null ? List.of() :
+                java.util.Arrays.stream(submission.getTags().split(",")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+        return new DishDtos.DishSubmissionView(
+                submission.getId(),
+                submission.getSubmitterId(),
+                user == null ? "unknown" : user.getNickname(),
+                submission.getCanteenId(),
+                canteen == null ? null : canteen.getName(),
+                submission.getWindowId(),
+                window == null ? null : window.getName(),
+                window == null ? null : window.getFloorNo(),
+                submission.getName(),
+                submission.getImageUrl(),
+                submission.getPrice(),
+                submission.getDescription(),
+                submission.getSpiceLevel(),
+                tags,
+                submission.getAuditStatus(),
+                submission.getAuditReason(),
+                submission.getCreatedAt()
+        );
+    }
+
     public List<ReviewDtos.ReviewView> reviewViews(Long dishId) {
         return approvedReviews(dishId).stream()
                 .sorted(Comparator.comparing(Review::getCreatedAt).reversed())

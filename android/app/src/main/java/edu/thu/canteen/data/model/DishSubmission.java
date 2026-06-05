@@ -30,6 +30,12 @@ public class DishSubmission {
     @SerializedName("auditStatus")
     public final String auditStatus;
     
+    @SerializedName("imageUrl")
+    public final String imageUrl;
+    
+    @SerializedName("spiceLevel")
+    public final int spiceLevel;
+    
     @SerializedName("price")
     public final double price;
     
@@ -38,7 +44,7 @@ public class DishSubmission {
 
     public DishSubmission(long id, long submitterId, long canteenId, long windowId, 
                           String name, String canteenName, String windowName, int floorNo,
-                          String auditStatus, double price, String description) {
+                          String auditStatus, String imageUrl, int spiceLevel, double price, String description) {
         this.id = id;
         this.submitterId = submitterId;
         this.canteenId = canteenId;
@@ -48,6 +54,8 @@ public class DishSubmission {
         this.windowName = windowName;
         this.floorNo = floorNo;
         this.auditStatus = auditStatus;
+        this.imageUrl = imageUrl;
+        this.spiceLevel = spiceLevel;
         this.price = price;
         this.description = description;
     }

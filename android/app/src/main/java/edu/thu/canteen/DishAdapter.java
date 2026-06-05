@@ -61,6 +61,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
     }
 
     public void replaceItems(List<Dish> nextItems) {
+        android.util.Log.d("DishAdapter", "Replacing items, new count: " + nextItems.size());
         items.clear();
         items.addAll(nextItems);
         notifyDataSetChanged();
