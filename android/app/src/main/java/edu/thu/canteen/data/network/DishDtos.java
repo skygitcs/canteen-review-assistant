@@ -30,6 +30,29 @@ public class DishDtos {
         }
     }
 
+    public static class DishSubmissionRequest {
+        public long canteenId;
+        public long windowId;
+        public String name;
+        public String imageUrl;
+        public double price;
+        public String description;
+        public int spiceLevel;
+        public List<String> tags;
+
+        public DishSubmissionRequest(long canteenId, long windowId, String name, String imageUrl,
+                                     double price, String description, int spiceLevel, List<String> tags) {
+            this.canteenId = canteenId;
+            this.windowId = windowId;
+            this.name = name;
+            this.imageUrl = imageUrl;
+            this.price = price;
+            this.description = description;
+            this.spiceLevel = spiceLevel;
+            this.tags = tags;
+        }
+    }
+
     public static class FavoriteRequest {
         public long dishId;
 

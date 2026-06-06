@@ -9,6 +9,7 @@ import edu.thu.canteen.security.SecurityUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -56,7 +57,7 @@ public class DishViewService {
                 window == null ? null : window.getName(),
                 window == null ? null : window.getFloorNo(),
                 dish.getName(),
-                dish.getImageUrl(),
+                publicMediaUrl(dish.getImageUrl()),
                 dish.getPrice(),
                 dish.getDescription(),
                 dish.getSpiceLevel(),
@@ -83,7 +84,7 @@ public class DishViewService {
                 window == null ? null : window.getName(),
                 window == null ? null : window.getFloorNo(),
                 submission.getName(),
-                submission.getImageUrl(),
+                publicMediaUrl(submission.getImageUrl()),
                 submission.getPrice(),
                 submission.getDescription(),
                 submission.getSpiceLevel(),
@@ -115,7 +116,7 @@ public class DishViewService {
                 user == null ? "unknown" : user.getNickname(),
                 review.getRating(),
                 review.getContent(),
-                review.getImageUrl(),
+                publicMediaUrl(review.getImageUrl()),
                 up,
                 down,
                 myVote,
@@ -139,7 +140,7 @@ public class DishViewService {
                 user == null ? "unknown" : user.getNickname(),
                 review.getRating(),
                 review.getContent(),
-                review.getImageUrl(),
+                publicMediaUrl(review.getImageUrl()),
                 up,
                 down,
                 review.getStatus(),
@@ -171,5 +172,16 @@ public class DishViewService {
 
     private Double round(double value) {
         return BigDecimal.valueOf(value).setScale(1, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    private String publicMediaUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()
+                || imageUrl.startsWith("http://") || imageUrl.startsWith("https://")) {
+            return imageUrl;
+        }
+        String path = imageUrl.startsWith("/") ? imageUrl : "/" + imageUrl;
+        return ServletUriComponentsBuilder.fromCurrentContextPath()
+                .path(path)
+                .toUriString();
     }
 }

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -43,6 +44,7 @@ public class FoodMapFragment extends Fragment {
     private FrameLayout markerContainer;
     private ChipGroup tagGroup;
     private View emptyText;
+    private TextView titleView;
 
     @Nullable
     @Override
@@ -56,6 +58,7 @@ public class FoodMapFragment extends Fragment {
         markerContainer = view.findViewById(R.id.marker_container);
         tagGroup = view.findViewById(R.id.map_tag_group);
         emptyText = view.findViewById(R.id.food_map_empty_text);
+        titleView = view.findViewById(R.id.food_map_title);
 
         EditText searchInput = view.findViewById(R.id.map_search_input);
         RecyclerView canteenList = view.findViewById(R.id.canteen_list);
@@ -102,6 +105,7 @@ public class FoodMapFragment extends Fragment {
                 if (isAdded() && response.isSuccessful() && response.body() != null && response.body().data != null) {
                     allCanteens.clear();
                     allCanteens.addAll(response.body().data);
+                    activeTag = "\u5168\u90e8";
                     updateFilters();
                     setupTags();
                     setupMap();
@@ -211,6 +215,7 @@ public class FoodMapFragment extends Fragment {
         if (canteenAdapter != null) canteenAdapter.notifyDataSetChanged();
         if (heatAdapter != null) heatAdapter.notifyDataSetChanged();
         if (emptyText != null) emptyText.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+        if (titleView != null) titleView.setText("\u5168\u90e8\u98df\u5802\uff08" + filtered.size() + "\uff09");
     }
 
     private boolean matchesCanteenTag(Canteen canteen, String trimmedQuery) {

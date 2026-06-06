@@ -48,11 +48,12 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
             holder.image.setVisibility(View.GONE);
         } else {
             holder.image.setVisibility(View.VISIBLE);
-            Glide.with(holder.image.getContext()).load(item.imageUrl).into(holder.image);
+            String resolvedImageUrl = UiUtils.resolveMediaUrl(item.imageUrl);
+            Glide.with(holder.image.getContext()).load(resolvedImageUrl).into(holder.image);
             holder.image.setOnClickListener(v -> {
                 android.content.Context context = holder.itemView.getContext();
                 if (context instanceof androidx.fragment.app.FragmentActivity) {
-                    ImageViewerDialog.show((androidx.fragment.app.FragmentActivity) context, item.imageUrl);
+                    ImageViewerDialog.show((androidx.fragment.app.FragmentActivity) context, resolvedImageUrl);
                 }
             });
         }

@@ -16,6 +16,7 @@ import edu.thu.canteen.data.model.Canteen;
 import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.network.ApiResponse;
 import edu.thu.canteen.data.network.CanteenDtos;
+import edu.thu.canteen.data.network.DishDtos;
 import edu.thu.canteen.data.network.NetworkClient;
 import java.util.Arrays;
 import java.util.List;
@@ -91,6 +92,7 @@ public class FormDialogs {
     private static void showSupplementForm(Context context, CanteenDtos.CanteenDetailResponse data, SupplementSubmitListener listener) {
         LinearLayout form = createForm(context);
         TextView title = title(context, "\u8865\u5145\u83dc\u54c1\u4fe1\u606f");
+        final String[] uploadedUrl = {null};
         
         TextView windowLabel = label(context, "\u9009\u62e9\u7a97\u53e3");
         android.widget.Spinner windowSpinner = new android.widget.Spinner(context);
@@ -105,6 +107,12 @@ public class FormDialogs {
         priceInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
         EditText descriptionInput = input(context, "\u8865\u5145\u8bf4\u660e");
         EditText tagsInput = input(context, "\u6807\u7b7e\uff0c\u7528\u7a7a\u683c\u6216\u9017\u53f7\u5206\u9694");
+        Button uploadButton = softButton(context, "\u4e0a\u4f20\u83dc\u54c1\u56fe\u7247");
+        uploadButton.setOnClickListener(v -> {
+            uploadedUrl[0] = "https://picsum.photos/seed/submission" + System.currentTimeMillis() + "/800/600";
+            UiUtils.toast(context, "\u5df2\u6a21\u62df\u4e0a\u4f20\u56fe\u7247");
+            uploadButton.setText("\u2705 \u5df2\u4e0a\u4f20\u56fe\u7247");
+        });
         
         TextView spiceLabel = label(context, "\u8fa3\u5ea6 (0-5)");
         android.widget.SeekBar spiceSeekBar = new android.widget.SeekBar(context);
@@ -118,6 +126,7 @@ public class FormDialogs {
         form.addView(priceInput);
         form.addView(descriptionInput);
         form.addView(tagsInput);
+        form.addView(uploadButton);
         form.addView(spiceLabel);
         form.addView(spiceSeekBar);
 
@@ -135,20 +144,25 @@ public class FormDialogs {
                     double price = 15.0;
                     try { price = Double.parseDouble(priceInput.getText().toString()); } catch (Exception e) {}
 
-                    Dish newDish = new Dish(
-                        0, data.base.id, selectedWindow.id, data.base.name, selectedWindow.name, selectedWindow.floorNo,
-                        name, "", price, descriptionInput.getText().toString(), spiceSeekBar.getProgress(),
-                        Arrays.asList(tagsInput.getText().toString().split("[,\\s]+")), "\u70ed\u83dc"
+                    DishDtos.DishSubmissionRequest request = new DishDtos.DishSubmissionRequest(
+                            data.base.id,
+                            selectedWindow.id,
+                            name,
+                            uploadedUrl[0],
+                            price,
+                            descriptionInput.getText().toString(),
+                            spiceSeekBar.getProgress(),
+                            Arrays.asList(tagsInput.getText().toString().split("[,\\s]+"))
                     );
                     
-                    submitDish(context, newDish, listener);
+                    submitDish(context, request, listener);
                 })
                 .show();
         widen(dialog);
     }
 
-    private static void submitDish(Context context, Dish dish, SupplementSubmitListener listener) {
-        NetworkClient.getService().submitDishSubmission(dish).enqueue(new Callback<ApiResponse<Void>>() {
+    private static void submitDish(Context context, DishDtos.DishSubmissionRequest request, SupplementSubmitListener listener) {
+        NetworkClient.getService().submitDishSubmission(request).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
             public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
                 if (response.isSuccessful()) {

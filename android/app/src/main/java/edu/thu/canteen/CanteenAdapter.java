@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.model.Canteen;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CanteenAdapter extends RecyclerView.Adapter<CanteenAdapter.ViewHolder> {
@@ -40,9 +41,22 @@ public class CanteenAdapter extends RecyclerView.Adapter<CanteenAdapter.ViewHold
         holder.address.setText(item.address);
         holder.rating.setText(String.format("%.1f", item.avgRating));
         holder.crowd.setText(String.format("%.1f", item.crowdLevel));
-        UiUtils.bindTags(holder.tags, item.tags);
+        UiUtils.bindTags(holder.tags, compactTags(item.tags));
         UiUtils.loadImage(holder.cover, item.coverUrl, item.id, "canteen");
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
+    }
+
+    private List<String> compactTags(List<String> tags) {
+        List<String> result = new ArrayList<>();
+        if (tags == null || tags.isEmpty()) {
+            result.add("暂无菜品");
+            return result;
+        }
+        for (String tag : tags) {
+            if (tag != null && !tag.isEmpty() && !result.contains(tag)) result.add(tag);
+            if (result.size() == 3) break;
+        }
+        return result;
     }
 
     @Override
