@@ -633,6 +633,8 @@ POST /api/dishes/{dishId}/reviews
   "imageUrl": null,
   "upVotes": 0,
   "downVotes": 0,
+  "myVote": 0,
+  "status": "APPROVED",
   "createdAt": "2026-06-04T18:20:00"
 }
 ```
@@ -663,10 +665,24 @@ POST /api/reviews/{reviewId}/vote
 | vote | 含义 |
 | --- | --- |
 | 1 | 点赞 |
-| 0 | 取消 |
 | -1 | 踩 |
+| 0 | 取消当前点赞/踩 |
 
 返回 `data`：更新后的评价对象。
+
+投票状态规则：
+
+- 当前未投票，传 `1`：点赞数加一，`myVote = 1`
+- 当前已点赞，再传 `1`：取消点赞，`myVote = 0`
+- 当前已点赞，传 `-1`：切换为踩，点赞数减一，踩数加一，`myVote = -1`
+- 当前已踩，再传 `-1`：取消踩，`myVote = 0`
+- 传 `0`：直接取消当前点赞/踩
+
+前端按钮逻辑建议：
+
+- 点赞按钮已高亮时，再点点赞按钮仍然传 `1`，后端会自动取消。
+- 踩按钮已高亮时，再点踩按钮仍然传 `-1`，后端会自动取消。
+- 不需要为了取消点赞去传 `-1`，否则会变成踩。
 
 前端页面对应：
 
@@ -832,6 +848,71 @@ POST /api/admin/announcements
   "content": "丁香食堂晚餐新增特色窗口。"
 }
 ```
+
+### 9.5 获取评论列表
+
+```http
+GET /api/admin/reviews
+```
+
+需要管理员登录。
+
+可选查询参数：
+
+| 参数 | 类型 | 说明 |
+| --- | --- | --- |
+| status | string | `APPROVED`、`REJECTED`，不传则返回全部 |
+
+返回 `data`：
+
+```json
+[
+  {
+    "id": 1,
+    "dishId": 2,
+    "dishName": "水煮牛肉",
+    "userId": 1,
+    "nickname": "清华吃饭人",
+    "rating": 5,
+    "content": "味道不错。",
+    "imageUrl": null,
+    "upVotes": 2,
+    "downVotes": 0,
+    "status": "APPROVED",
+    "createdAt": "2026-06-04T18:20:00"
+  }
+]
+```
+
+### 9.6 审核通过评论
+
+```http
+POST /api/admin/reviews/{id}/approve
+```
+
+需要管理员登录。
+
+返回 `data`：更新后的评论对象。
+
+### 9.7 隐藏/驳回评论
+
+```http
+POST /api/admin/reviews/{id}/reject
+```
+
+需要管理员登录。
+
+请求体：
+
+```json
+{
+  "reason": "内容不适合展示"
+}
+```
+
+返回 `data`：更新后的评论对象。
+
+评论被 reject 后不会在菜品详情页展示。
 
 ## 10. 前端页面接口对应表
 

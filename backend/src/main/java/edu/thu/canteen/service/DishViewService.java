@@ -5,6 +5,9 @@ import edu.thu.canteen.domain.entity.*;
 import edu.thu.canteen.domain.mapper.*;
 import edu.thu.canteen.dto.DishDtos;
 import edu.thu.canteen.dto.ReviewDtos;
+import edu.thu.canteen.security.SecurityUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -104,6 +107,7 @@ public class DishViewService {
                 .eq(ReviewVote::getReviewId, review.getId()).eq(ReviewVote::getVote, 1));
         Long down = voteMapper.selectCount(Wrappers.<ReviewVote>lambdaQuery()
                 .eq(ReviewVote::getReviewId, review.getId()).eq(ReviewVote::getVote, -1));
+        Integer myVote = currentUserVote(review.getId());
         return new ReviewDtos.ReviewView(
                 review.getId(),
                 review.getDishId(),
@@ -114,6 +118,31 @@ public class DishViewService {
                 review.getImageUrl(),
                 up,
                 down,
+                myVote,
+                review.getStatus(),
+                review.getCreatedAt()
+        );
+    }
+
+    public ReviewDtos.AdminReviewView adminReviewView(Review review) {
+        User user = userMapper.selectById(review.getUserId());
+        Dish dish = dishMapper.selectById(review.getDishId());
+        Long up = voteMapper.selectCount(Wrappers.<ReviewVote>lambdaQuery()
+                .eq(ReviewVote::getReviewId, review.getId()).eq(ReviewVote::getVote, 1));
+        Long down = voteMapper.selectCount(Wrappers.<ReviewVote>lambdaQuery()
+                .eq(ReviewVote::getReviewId, review.getId()).eq(ReviewVote::getVote, -1));
+        return new ReviewDtos.AdminReviewView(
+                review.getId(),
+                review.getDishId(),
+                dish == null ? "unknown" : dish.getName(),
+                review.getUserId(),
+                user == null ? "unknown" : user.getNickname(),
+                review.getRating(),
+                review.getContent(),
+                review.getImageUrl(),
+                up,
+                down,
+                review.getStatus(),
                 review.getCreatedAt()
         );
     }
@@ -126,6 +155,18 @@ public class DishViewService {
         return reviewMapper.selectList(Wrappers.<Review>lambdaQuery()
                 .eq(Review::getDishId, dishId)
                 .eq(Review::getStatus, "APPROVED"));
+    }
+
+    private Integer currentUserVote(Long reviewId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()
+                || !(authentication.getPrincipal() instanceof User)) {
+            return 0;
+        }
+        ReviewVote vote = voteMapper.selectOne(Wrappers.<ReviewVote>lambdaQuery()
+                .eq(ReviewVote::getReviewId, reviewId)
+                .eq(ReviewVote::getUserId, SecurityUtils.currentUserId()));
+        return vote == null ? 0 : vote.getVote();
     }
 
     private Double round(double value) {
