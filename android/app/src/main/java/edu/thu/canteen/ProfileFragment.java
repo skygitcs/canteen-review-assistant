@@ -18,6 +18,7 @@ import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.model.UserProfile;
 import edu.thu.canteen.data.network.ApiResponse;
 import edu.thu.canteen.data.network.NetworkClient;
+import com.google.android.material.chip.ChipGroup;
 import java.util.ArrayList;
 import java.util.List;
 import retrofit2.Call;
@@ -28,7 +29,7 @@ public class ProfileFragment extends Fragment {
     private ImageView avatar;
     private TextView name;
     private TextView username;
-    private TextView preference;
+    private ChipGroup preferenceTags;
     private View adminButton;
     private FavoriteAdapter favoriteAdapter;
     private ActivityAdapter activityAdapter;
@@ -45,7 +46,7 @@ public class ProfileFragment extends Fragment {
         avatar = view.findViewById(R.id.profile_avatar);
         name = view.findViewById(R.id.profile_name);
         username = view.findViewById(R.id.profile_username);
-        preference = view.findViewById(R.id.profile_preference);
+        preferenceTags = view.findViewById(R.id.profile_preference_tags);
         adminButton = view.findViewById(R.id.admin_button);
 
         RecyclerView activityListView = view.findViewById(R.id.activity_list);
@@ -139,8 +140,9 @@ public class ProfileFragment extends Fragment {
         UiUtils.loadImage(avatar, profile.avatarUrl, 0, "user");
         name.setText(profile.nickname);
         username.setText("@" + profile.username);
-        preference.setText(profile.tastePreference != null && !profile.tastePreference.isEmpty() 
-            ? profile.tastePreference : "\u672a\u8bbe\u7f6e\u53e3\u5473\u504f\u597d");
+        UiUtils.bindTags(preferenceTags, profile.tastePreference != null && !profile.tastePreference.isEmpty()
+                ? java.util.Arrays.asList(profile.tastePreference.split("[,，、\\s]+"))
+                : java.util.List.of("\u672a\u8bbe\u7f6e"));
         
         adminButton.setVisibility("ADMIN".equals(profile.role) ? View.VISIBLE : View.GONE);
     }

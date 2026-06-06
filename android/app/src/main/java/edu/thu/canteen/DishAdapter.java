@@ -40,6 +40,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
         holder.name.setText(item.name);
         holder.window.setText(item.floorNo + "\u697c \u00b7 " + item.windowName);
         holder.price.setText(UiUtils.formatPrice(item.price));
+        holder.rating.setText(String.format("\u2605 %.1f\n%d\u6761", item.avgRating, item.reviewCount));
         UiUtils.bindTags(holder.tags, item.tags);
         UiUtils.loadImage(holder.cover, item.imageUrl, item.id, "dish");
         
@@ -72,6 +73,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
         final TextView name;
         final TextView window;
         final TextView price;
+        final TextView rating;
         final ChipGroup tags;
 
         ViewHolder(View itemView) {
@@ -80,6 +82,7 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
             name = itemView.findViewById(R.id.item_dish_name);
             window = itemView.findViewById(R.id.item_dish_window);
             price = itemView.findViewById(R.id.item_dish_price);
+            rating = itemView.findViewById(R.id.item_dish_rating);
             tags = itemView.findViewById(R.id.item_dish_tags);
         }
     }

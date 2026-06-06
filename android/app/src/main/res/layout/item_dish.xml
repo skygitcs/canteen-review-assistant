@@ -43,12 +43,27 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/item_dish_price"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="14sp"
-        android:textColor="@color/gray_900" />
+        android:gravity="end"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/item_dish_price"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:textColor="@color/gray_900" />
+
+        <TextView
+            android:id="@+id/item_dish_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="11sp"
+            android:textColor="@color/gray_600" />
+    </LinearLayout>
 </LinearLayout>
 

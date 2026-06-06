@@ -1,9 +1,12 @@
 package edu.thu.canteen;
 
 import android.app.Dialog;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -12,20 +15,39 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.model.Canteen;
-import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.network.ApiResponse;
 import edu.thu.canteen.data.network.CanteenDtos;
 import edu.thu.canteen.data.network.DishDtos;
 import edu.thu.canteen.data.network.NetworkClient;
-import java.util.Arrays;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
 public class FormDialogs {
+    public static final int REQUEST_PICK_IMAGE = 7021;
+    private static PendingUpload pendingUpload;
+
+    private static class PendingUpload {
+        final Context context;
+        final Button button;
+        final String[] targetUrl;
+
+        PendingUpload(Context context, Button button, String[] targetUrl) {
+            this.context = context;
+            this.button = button;
+            this.targetUrl = targetUrl;
+        }
+    }
     public interface ReviewSubmitListener {
         void onSubmit(int rating, String content, String imageUrl);
     }
@@ -43,30 +65,46 @@ public class FormDialogs {
     }
 
     public static void showEditProfileDialog(Context context, edu.thu.canteen.data.model.UserProfile current, ProfileEditListener listener) {
+        NetworkClient.getService().getDishTags().enqueue(new Callback<ApiResponse<List<String>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<String>>> call, Response<ApiResponse<List<String>>> response) {
+                List<String> tags = response.isSuccessful() && response.body() != null && response.body().data != null
+                        ? response.body().data : List.of();
+                showEditProfileForm(context, current, tags, listener);
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<String>>> call, Throwable t) {
+                showEditProfileForm(context, current, List.of(), listener);
+            }
+        });
+    }
+
+    private static void showEditProfileForm(Context context, edu.thu.canteen.data.model.UserProfile current,
+                                            List<String> existingTags, ProfileEditListener listener) {
         LinearLayout form = createForm(context);
         TextView title = title(context, "\u7f16\u8f91\u4e2a\u4eba\u8d44\u6599");
         EditText nicknameInput = input(context, "\u6635\u79f0");
         nicknameInput.setText(current.nickname);
-        EditText preferenceInput = input(context, "\u53e3\u5473\u504f\u597d");
-        preferenceInput.setText(current.tastePreference);
+        Set<String> selectedTags = selectedTags(current.tastePreference);
+        ChipGroup tagChoices = tagChoices(context, existingTags, selectedTags);
 
         form.addView(title);
         form.addView(label(context, "\u6635\u79f0"));
         form.addView(nicknameInput);
         form.addView(label(context, "\u53e3\u5473\u504f\u597d"));
-        form.addView(preferenceInput);
+        form.addView(tagChoices);
 
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setView(form)
                 .setNegativeButton("\u53d6\u6d88", null)
                 .setPositiveButton("\u4fdd\u5b58", (d, which) -> {
                     String nickname = nicknameInput.getText().toString().trim();
-                    String preference = preferenceInput.getText().toString().trim();
                     if (nickname.isEmpty()) {
                         UiUtils.toast(context, "\u6635\u79f0\u4e0d\u80fd\u4e3a\u7a7a");
                         return;
                     }
-                    listener.onUpdate(nickname, preference);
+                    listener.onUpdate(nickname, String.join(",", selectedTags));
                 })
                 .show();
         widen(dialog);
@@ -77,7 +115,19 @@ public class FormDialogs {
             @Override
             public void onResponse(Call<ApiResponse<CanteenDtos.CanteenDetailResponse>> call, Response<ApiResponse<CanteenDtos.CanteenDetailResponse>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().data != null) {
-                    showSupplementForm(context, response.body().data, listener);
+                    NetworkClient.getService().getDishTags().enqueue(new Callback<ApiResponse<List<String>>>() {
+                        @Override
+                        public void onResponse(Call<ApiResponse<List<String>>> tagCall, Response<ApiResponse<List<String>>> tagResponse) {
+                            List<String> tags = tagResponse.isSuccessful() && tagResponse.body() != null && tagResponse.body().data != null
+                                    ? tagResponse.body().data : List.of();
+                            showSupplementForm(context, response.body().data, tags, listener);
+                        }
+
+                        @Override
+                        public void onFailure(Call<ApiResponse<List<String>>> tagCall, Throwable t) {
+                            showSupplementForm(context, response.body().data, List.of(), listener);
+                        }
+                    });
                 } else {
                     UiUtils.toast(context, "\u65e0\u6cd5\u83b7\u53d6\u7a97\u53e3\u4fe1\u606f");
                 }
@@ -89,7 +139,8 @@ public class FormDialogs {
         });
     }
 
-    private static void showSupplementForm(Context context, CanteenDtos.CanteenDetailResponse data, SupplementSubmitListener listener) {
+    private static void showSupplementForm(Context context, CanteenDtos.CanteenDetailResponse data,
+                                           List<String> existingTags, SupplementSubmitListener listener) {
         LinearLayout form = createForm(context);
         TextView title = title(context, "\u8865\u5145\u83dc\u54c1\u4fe1\u606f");
         final String[] uploadedUrl = {null};
@@ -106,12 +157,11 @@ public class FormDialogs {
         EditText priceInput = input(context, "\u4ef7\u683c");
         priceInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
         EditText descriptionInput = input(context, "\u8865\u5145\u8bf4\u660e");
-        EditText tagsInput = input(context, "\u6807\u7b7e\uff0c\u7528\u7a7a\u683c\u6216\u9017\u53f7\u5206\u9694");
+        Set<String> selectedTags = new LinkedHashSet<>();
+        ChipGroup tagChoices = tagChoices(context, existingTags, selectedTags);
         Button uploadButton = softButton(context, "\u4e0a\u4f20\u83dc\u54c1\u56fe\u7247");
         uploadButton.setOnClickListener(v -> {
-            uploadedUrl[0] = "https://picsum.photos/seed/submission" + System.currentTimeMillis() + "/800/600";
-            UiUtils.toast(context, "\u5df2\u6a21\u62df\u4e0a\u4f20\u56fe\u7247");
-            uploadButton.setText("\u2705 \u5df2\u4e0a\u4f20\u56fe\u7247");
+            pickAndUploadImage(context, uploadButton, uploadedUrl);
         });
         
         TextView spiceLabel = label(context, "\u8fa3\u5ea6 (0-5)");
@@ -125,7 +175,8 @@ public class FormDialogs {
         form.addView(dishName);
         form.addView(priceInput);
         form.addView(descriptionInput);
-        form.addView(tagsInput);
+        form.addView(label(context, "\u5e38\u7528\u6807\u7b7e"));
+        form.addView(tagChoices);
         form.addView(uploadButton);
         form.addView(spiceLabel);
         form.addView(spiceSeekBar);
@@ -152,7 +203,7 @@ public class FormDialogs {
                             price,
                             descriptionInput.getText().toString(),
                             spiceSeekBar.getProgress(),
-                            Arrays.asList(tagsInput.getText().toString().split("[,\\s]+"))
+                            new ArrayList<>(selectedTags)
                     );
                     
                     submitDish(context, request, listener);
@@ -162,18 +213,19 @@ public class FormDialogs {
     }
 
     private static void submitDish(Context context, DishDtos.DishSubmissionRequest request, SupplementSubmitListener listener) {
-        NetworkClient.getService().submitDishSubmission(request).enqueue(new Callback<ApiResponse<Void>>() {
+        NetworkClient.getService().submitDishSubmission(request).enqueue(new Callback<ApiResponse<Object>>() {
             @Override
-            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
-                if (response.isSuccessful()) {
+            public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     UiUtils.toast(context, "\u5df2\u63d0\u4ea4\u8865\u5145\u4fe1\u606f\uff0c\u8bf7\u7b49\u5f85\u5ba1\u6838");
                     if (listener != null) listener.onSubmitted();
                 } else {
-                    UiUtils.toast(context, "\u63d0\u4ea4\u5931\u8d25");
+                    String message = response.body() == null ? "\u63d0\u4ea4\u5931\u8d25" : response.body().message;
+                    UiUtils.toast(context, message);
                 }
             }
             @Override
-            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
                 UiUtils.toast(context, "\u7f51\u7edc\u9519\u8bef");
             }
         });
@@ -335,6 +387,106 @@ public class FormDialogs {
         params.setMargins(0, 0, 0, dp(context, 4));
         button.setLayoutParams(params);
         return button;
+    }
+
+    private static ChipGroup tagChoices(Context context, List<String> tags, Set<String> selectedTags) {
+        ChipGroup group = new ChipGroup(context);
+        group.setSingleLine(false);
+        int count = 0;
+        for (String tag : UiUtils.normalizeTags(tags)) {
+            if (tag == null || tag.trim().isEmpty()) continue;
+            Chip chip = new Chip(context);
+            chip.setText(tag);
+            chip.setCheckable(true);
+            boolean checked = selectedTags.contains(tag);
+            chip.setChecked(checked);
+            chip.setText((checked ? "\u2713 " : "") + tag);
+            UiUtils.styleSelectableTagChip(chip, tag, checked);
+            chip.setOnClickListener(v -> {
+                boolean nextChecked = !selectedTags.contains(tag);
+                if (nextChecked) {
+                    selectedTags.add(tag);
+                } else {
+                    selectedTags.remove(tag);
+                }
+                chip.setChecked(nextChecked);
+                chip.setText((nextChecked ? "\u2713 " : "") + tag);
+                UiUtils.styleSelectableTagChip(chip, tag, nextChecked);
+            });
+            group.addView(chip);
+            count++;
+            if (count >= 12) break;
+        }
+        return group;
+    }
+
+    private static Set<String> selectedTags(String raw) {
+        return new LinkedHashSet<>(UiUtils.normalizeTags(raw == null ? List.of() : List.of(raw)));
+    }
+
+    private static void pickAndUploadImage(Context context, Button button, String[] targetUrl) {
+        if (!(context instanceof Activity)) {
+            UiUtils.toast(context, "\u5f53\u524d\u9875\u9762\u4e0d\u652f\u6301\u9009\u56fe");
+            return;
+        }
+        pendingUpload = new PendingUpload(context, button, targetUrl);
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        ((Activity) context).startActivityForResult(Intent.createChooser(intent, "\u9009\u62e9\u83dc\u54c1\u56fe\u7247"), REQUEST_PICK_IMAGE);
+    }
+
+    public static boolean handleActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode != REQUEST_PICK_IMAGE || pendingUpload == null) return false;
+        PendingUpload upload = pendingUpload;
+        pendingUpload = null;
+        if (resultCode != Activity.RESULT_OK || data == null || data.getData() == null) return true;
+        Uri uri = data.getData();
+        try {
+            byte[] bytes = readBytes(upload.context, uri);
+            RequestBody body = RequestBody.create(bytes, MediaType.parse("image/*"));
+            MultipartBody.Part part = MultipartBody.Part.createFormData("file", "dish_upload.jpg", body);
+            upload.button.setEnabled(false);
+            upload.button.setText("\u6b63\u5728\u4e0a\u4f20...");
+            NetworkClient.getService().uploadImage(part).enqueue(new Callback<ApiResponse<DishDtos.UploadResponse>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<DishDtos.UploadResponse>> call, Response<ApiResponse<DishDtos.UploadResponse>> response) {
+                    upload.button.setEnabled(true);
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess() && response.body().data != null) {
+                        upload.targetUrl[0] = response.body().data.url;
+                        upload.button.setText("\u2713 \u5df2\u4e0a\u4f20\u56fe\u7247");
+                        UiUtils.toast(upload.context, "\u56fe\u7247\u4e0a\u4f20\u6210\u529f");
+                    } else {
+                        upload.button.setText("\u4e0a\u4f20\u83dc\u54c1\u56fe\u7247");
+                        String message = response.body() == null ? "\u56fe\u7247\u4e0a\u4f20\u5931\u8d25" : response.body().message;
+                        UiUtils.toast(upload.context, message);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<DishDtos.UploadResponse>> call, Throwable t) {
+                    upload.button.setEnabled(true);
+                    upload.button.setText("\u4e0a\u4f20\u83dc\u54c1\u56fe\u7247");
+                    UiUtils.toast(upload.context, "\u7f51\u7edc\u9519\u8bef");
+                }
+            });
+        } catch (Exception e) {
+            upload.button.setText("\u4e0a\u4f20\u83dc\u54c1\u56fe\u7247");
+            UiUtils.toast(upload.context, "\u8bfb\u53d6\u56fe\u7247\u5931\u8d25");
+        }
+        return true;
+    }
+
+    private static byte[] readBytes(Context context, Uri uri) throws java.io.IOException {
+        try (java.io.InputStream input = context.getContentResolver().openInputStream(uri);
+             java.io.ByteArrayOutputStream output = new java.io.ByteArrayOutputStream()) {
+            if (input == null) throw new java.io.IOException("image stream is null");
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = input.read(buffer)) != -1) {
+                output.write(buffer, 0, read);
+            }
+            return output.toByteArray();
+        }
     }
 
     private static void renderStars(TextView[] stars, int rating) {
