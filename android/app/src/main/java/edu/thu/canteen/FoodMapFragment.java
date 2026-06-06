@@ -207,13 +207,13 @@ public class FoodMapFragment extends Fragment {
 
         // Initialize static data once - matching DB names
         if (markerDataList.isEmpty()) {
-            markerDataList.add(new MarkerData("\u7d2b\u8346", 0.63f, 0.12f));
-            markerDataList.add(new MarkerData("\u6843\u674e", 0.39f, 0.18f));
-            markerDataList.add(new MarkerData("\u7389\u6811", 0.72f, 0.17f));
-            markerDataList.add(new MarkerData("\u4e01\u9999", 0.58f, 0.30f));
-            markerDataList.add(new MarkerData("\u542c\u6d9b", 0.47f, 0.39f));
-            markerDataList.add(new MarkerData("\u6e05\u82ac", 0.62f, 0.43f));
-            markerDataList.add(new MarkerData("\u89c2\u7574", 0.23f, 0.34f));
+            markerDataList.add(new MarkerData("\u7d2b\u8346", 0.54f, 0.13f));
+            markerDataList.add(new MarkerData("\u6843\u674e", 0.44f, 0.19f));
+            markerDataList.add(new MarkerData("\u7389\u6811", 0.65f, 0.15f));
+            markerDataList.add(new MarkerData("\u4e01\u9999", 0.52f, 0.29f));
+            markerDataList.add(new MarkerData("\u542c\u6d9b", 0.53f, 0.35f));
+            markerDataList.add(new MarkerData("\u6e05\u82ac", 0.57f, 0.40f));
+            markerDataList.add(new MarkerData("\u89c2\u7574", 0.36f, 0.34f));
         }
 
         // Listen for zooms and pans to reposition markers
@@ -240,26 +240,26 @@ public class FoodMapFragment extends Fragment {
         float imgLeft = rect.left;
         float imgTop = rect.top;
 
-        int markerSize = (int) (32 * getResources().getDisplayMetrics().density);
+        int markerWidth = (int) (64 * getResources().getDisplayMetrics().density);
+        int markerHeight = (int) (32 * getResources().getDisplayMetrics().density);
 
         for (MarkerData data : markerDataList) {
             if (data.view == null) continue;
             
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) data.view.getLayoutParams();
-            params.leftMargin = (int) (imgLeft + (imgWidth * data.xPercent)) - (markerSize / 2);
-            params.topMargin = (int) (imgTop + (imgHeight * data.yPercent)) - (markerSize / 2);
+            params.leftMargin = (int) (imgLeft + (imgWidth * data.xPercent)) - (markerWidth / 2);
+            params.topMargin = (int) (imgTop + (imgHeight * data.yPercent)) - (markerHeight / 2);
             data.view.setLayoutParams(params);
         }
     }
 
     private View createMarkerView(MarkerData data) {
         View marker = new View(requireContext());
-        
-        // Fully transparent as requested
         marker.setBackgroundColor(android.graphics.Color.TRANSPARENT);
 
-        int markerSize = (int) (48 * getResources().getDisplayMetrics().density);
-        marker.setLayoutParams(new FrameLayout.LayoutParams(markerSize, markerSize));
+        int markerWidth = (int) (64 * getResources().getDisplayMetrics().density);
+        int markerHeight = (int) (32 * getResources().getDisplayMetrics().density);
+        marker.setLayoutParams(new FrameLayout.LayoutParams(markerWidth, markerHeight));
 
         // Find the canteen object by name for popup details
         Canteen targetCanteen = null;

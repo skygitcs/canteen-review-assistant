@@ -60,4 +60,8 @@ public class DishDtos {
             this.dishId = dishId;
         }
     }
+
+    public static class UploadResponse {
+        public String url;
+    }
 }

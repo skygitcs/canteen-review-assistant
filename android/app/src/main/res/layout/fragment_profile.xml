@@ -25,8 +25,9 @@
                 android:scaleType="centerCrop" />
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:orientation="vertical"
                 android:layout_marginStart="12dp">
 
@@ -45,19 +46,17 @@
                     android:textSize="12sp"
                     android:textColor="@color/gray_500" />
 
-                <TextView
-                    android:id="@+id/profile_preference"
-                    android:layout_width="wrap_content"
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/profile_preference_tags"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:textSize="12sp"
-                    android:textColor="@color/purple_700" />
+                    android:singleLine="false" />
             </LinearLayout>
 
             <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_width="8dp"
+                android:layout_height="1dp" />
 
             <TextView
                 android:id="@+id/edit_profile_button"

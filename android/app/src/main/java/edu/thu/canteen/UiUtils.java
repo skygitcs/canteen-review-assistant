@@ -9,13 +9,15 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.network.NetworkClient;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class UiUtils {
     public static void bindTags(ChipGroup group, List<String> tags) {
         group.removeAllViews();
-        if (tags == null) return;
-        for (String tag : tags) {
+        for (String tag : normalizeTags(tags)) {
             Chip chip = new Chip(group.getContext());
             chip.setText(tag);
             styleTagChip(chip, tag);
@@ -23,13 +25,41 @@ public class UiUtils {
         }
     }
 
+    public static List<String> normalizeTags(List<String> tags) {
+        Set<String> result = new LinkedHashSet<>();
+        if (tags == null) return new ArrayList<>();
+        for (String raw : tags) {
+            if (raw == null) continue;
+            for (String tag : raw.split("[,，、\\s]+")) {
+                String trimmed = tag.trim();
+                if (!trimmed.isEmpty()) result.add(trimmed);
+            }
+        }
+        return new ArrayList<>(result);
+    }
+
     public static void styleTagChip(Chip chip, String tag) {
-        int[] colors = getTagColors(tag);
+        int[] colors = getTagColors(tag == null ? "" : tag);
         chip.setChipBackgroundColor(ColorStateList.valueOf(colors[0]));
         chip.setTextColor(colors[1]);
         chip.setChipStrokeColor(ColorStateList.valueOf(colors[2]));
         chip.setChipStrokeWidth(1f);
         chip.setTextSize(12f);
+    }
+
+    public static void styleSelectableTagChip(Chip chip, String tag, boolean checked) {
+        if (!checked) {
+            styleTagChip(chip, tag);
+            chip.setAlpha(0.75f);
+            return;
+        }
+        int[] colors = getTagColors(tag == null ? "" : tag);
+        chip.setChipBackgroundColor(ColorStateList.valueOf(colors[1]));
+        chip.setTextColor(Color.WHITE);
+        chip.setChipStrokeColor(ColorStateList.valueOf(colors[1]));
+        chip.setChipStrokeWidth(1f);
+        chip.setTextSize(12f);
+        chip.setAlpha(1f);
     }
 
     public static int[] getTagColors(String tag) {
@@ -44,13 +74,13 @@ public class UiUtils {
                 || tag.contains("\u5496\u5561") || tag.contains("\u51b0\u996e")) {
             return colors("#FEF3C7", "#B45309", "#FCD34D");
         }
-        if (tag.contains("\u9762")) {
+        if (tag.contains("\u9762") || tag.contains("\u7c89") || tag.contains("\u4e3b\u98df")) {
             return colors("#E0F2FE", "#0369A1", "#7DD3FC");
         }
         if (tag.contains("\u7c73\u996d") || tag.contains("\u76d6\u996d") || tag.contains("\u4e0b\u996d")) {
             return colors("#F5F5F4", "#57534E", "#D6D3D1");
         }
-        if (tag.contains("\u86cb\u767d\u8d28") || tag.contains("\u8089") || tag.contains("\u9c7c")) {
+        if (tag.contains("\u86cb\u767d") || tag.contains("\u8089") || tag.contains("\u9c7c") || tag.contains("\u8364\u83dc")) {
             return colors("#FFE4E6", "#BE123C", "#FDA4AF");
         }
         if (tag.contains("\u5b9e\u60e0") || tag.contains("\u6027\u4ef7\u6bd4")) {
@@ -75,7 +105,6 @@ public class UiUtils {
         if (url != null && !url.isEmpty()) {
             Glide.with(imageView.getContext()).load(resolveMediaUrl(url)).into(imageView);
         } else {
-            // Fallback to a high-quality placeholder based on seed and type
             String fallbackUrl = String.format("https://picsum.photos/seed/%s%d/800/600", type, seed);
             Glide.with(imageView.getContext()).load(fallbackUrl).into(imageView);
         }
@@ -91,6 +120,6 @@ public class UiUtils {
     }
 
     public static String formatPrice(double price) {
-        return price <= 0 ? "称重计价" : String.format("￥%.2f", price);
+        return price <= 0 ? "\u79f0\u91cd\u8ba1\u4ef7" : String.format("\u00a5%.2f", price);
     }
 }

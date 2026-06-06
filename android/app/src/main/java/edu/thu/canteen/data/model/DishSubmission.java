@@ -1,6 +1,7 @@
 package edu.thu.canteen.data.model;
 
 import com.google.gson.annotations.SerializedName;
+import java.util.List;
 
 public class DishSubmission {
     @SerializedName("id")
@@ -8,6 +9,9 @@ public class DishSubmission {
     
     @SerializedName("submitterId")
     public final long submitterId;
+
+    @SerializedName("submitterName")
+    public final String submitterName;
     
     @SerializedName("canteenId")
     public final long canteenId;
@@ -42,11 +46,19 @@ public class DishSubmission {
     @SerializedName("description")
     public final String description;
 
+    @SerializedName("tags")
+    public final List<String> tags;
+
+    @SerializedName("auditReason")
+    public final String auditReason;
+
     public DishSubmission(long id, long submitterId, long canteenId, long windowId, 
                           String name, String canteenName, String windowName, int floorNo,
-                          String auditStatus, String imageUrl, int spiceLevel, double price, String description) {
+                          String auditStatus, String imageUrl, int spiceLevel, double price, String description,
+                          String submitterName, List<String> tags, String auditReason) {
         this.id = id;
         this.submitterId = submitterId;
+        this.submitterName = submitterName;
         this.canteenId = canteenId;
         this.windowId = windowId;
         this.name = name;
@@ -58,5 +70,7 @@ public class DishSubmission {
         this.spiceLevel = spiceLevel;
         this.price = price;
         this.description = description;
+        this.tags = tags;
+        this.auditReason = auditReason;
     }
 }

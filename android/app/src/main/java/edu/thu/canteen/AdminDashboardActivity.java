@@ -1,6 +1,7 @@
 package edu.thu.canteen;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,10 +18,11 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class AdminDashboardActivity extends AppCompatActivity {
+    private final List<DishSubmission> submissions = new ArrayList<>();
     private SubmissionAdapter adapter;
-    private List<DishSubmission> submissions = new ArrayList<>();
     private EditText announceTitle;
     private EditText announceContent;
+    private View submissionEmptyText;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -29,12 +31,11 @@ public class AdminDashboardActivity extends AppCompatActivity {
 
         announceTitle = findViewById(R.id.admin_announce_title);
         announceContent = findViewById(R.id.admin_announce_content);
+        submissionEmptyText = findViewById(R.id.submission_empty_text);
         findViewById(R.id.admin_post_announce_button).setOnClickListener(v -> postAnnouncement());
 
         RecyclerView submissionList = findViewById(R.id.submission_list);
         submissionList.setLayoutManager(new LinearLayoutManager(this));
-        
-        // Initializing with empty list, will be populated by fetchData()
         adapter = new SubmissionAdapter(submissions, new SubmissionAdapter.OnActionClick() {
             @Override
             public void onApprove(DishSubmission submission) {
@@ -48,8 +49,6 @@ public class AdminDashboardActivity extends AppCompatActivity {
         });
         submissionList.setAdapter(adapter);
 
-        // Remove Support List initialization as it's mock and not supported by API
-        
         fetchData();
     }
 
@@ -57,33 +56,47 @@ public class AdminDashboardActivity extends AppCompatActivity {
         NetworkClient.getService().getPendingSubmissions().enqueue(new Callback<ApiResponse<List<DishSubmission>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<DishSubmission>>> call, Response<ApiResponse<List<DishSubmission>>> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().data != null) {
-                    submissions.clear();
+                submissions.clear();
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess() && response.body().data != null) {
                     submissions.addAll(response.body().data);
-                    adapter.notifyDataSetChanged();
+                } else {
+                    String message = response.body() == null ? "无法获取待审核菜品" : response.body().message;
+                    UiUtils.toast(AdminDashboardActivity.this, message);
                 }
+                adapter.notifyDataSetChanged();
+                updateEmptyState();
             }
+
             @Override
-            public void onFailure(Call<ApiResponse<List<DishSubmission>>> call, Throwable t) {}
+            public void onFailure(Call<ApiResponse<List<DishSubmission>>> call, Throwable t) {
+                UiUtils.toast(AdminDashboardActivity.this, "网络错误");
+                updateEmptyState();
+            }
         });
     }
 
     private void handleAudit(long id, boolean approve) {
-        AdminDtos.AuditRequest request = new AdminDtos.AuditRequest("Admin approved via mobile app");
-        Call<ApiResponse<Object>> call = approve 
-            ? NetworkClient.getService().approveSubmission(id, request)
-            : NetworkClient.getService().rejectSubmission(id, request);
-            
+        AdminDtos.AuditRequest request = new AdminDtos.AuditRequest(approve ? "管理员审核通过" : "管理员驳回");
+        Call<ApiResponse<Object>> call = approve
+                ? NetworkClient.getService().approveSubmission(id, request)
+                : NetworkClient.getService().rejectSubmission(id, request);
+
         call.enqueue(new Callback<ApiResponse<Object>>() {
             @Override
             public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
-                if (response.isSuccessful()) {
-                    UiUtils.toast(AdminDashboardActivity.this, approve ? "\u5df2批准" : "\u5df2驳回");
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    UiUtils.toast(AdminDashboardActivity.this, approve ? "已批准" : "已驳回");
                     fetchData();
+                } else {
+                    String message = response.body() == null ? "审核失败" : response.body().message;
+                    UiUtils.toast(AdminDashboardActivity.this, message);
                 }
             }
+
             @Override
-            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {}
+            public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
+                UiUtils.toast(AdminDashboardActivity.this, "网络错误");
+            }
         });
     }
 
@@ -91,7 +104,7 @@ public class AdminDashboardActivity extends AppCompatActivity {
         String title = announceTitle.getText().toString().trim();
         String content = announceContent.getText().toString().trim();
         if (title.isEmpty() || content.isEmpty()) {
-            UiUtils.toast(this, "\u8bf7\u586b\u5199\u5b8c\u6574\u516c\u544a\u4fe1\u606f");
+            UiUtils.toast(this, "请填写完整公告信息");
             return;
         }
 
@@ -99,15 +112,26 @@ public class AdminDashboardActivity extends AppCompatActivity {
                 .enqueue(new Callback<ApiResponse<Object>>() {
                     @Override
                     public void onResponse(Call<ApiResponse<Object>> call, Response<ApiResponse<Object>> response) {
-                        if (response.isSuccessful()) {
-                            UiUtils.toast(AdminDashboardActivity.this, "\u516c\u544a\u53d1\u5e03\u6210\u529f");
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            UiUtils.toast(AdminDashboardActivity.this, "公告发布成功");
                             announceTitle.setText("");
                             announceContent.setText("");
+                        } else {
+                            String message = response.body() == null ? "公告发布失败" : response.body().message;
+                            UiUtils.toast(AdminDashboardActivity.this, message);
                         }
                     }
+
                     @Override
-                    public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {}
+                    public void onFailure(Call<ApiResponse<Object>> call, Throwable t) {
+                        UiUtils.toast(AdminDashboardActivity.this, "网络错误");
+                    }
                 });
     }
-}
 
+    private void updateEmptyState() {
+        if (submissionEmptyText != null) {
+            submissionEmptyText.setVisibility(submissions.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+    }
+}

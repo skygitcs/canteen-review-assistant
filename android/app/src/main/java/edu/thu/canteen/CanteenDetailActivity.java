@@ -94,6 +94,14 @@ public class CanteenDetailActivity extends AppCompatActivity {
         fetchData();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if (FormDialogs.handleActivityResult(requestCode, resultCode, data)) {
+            return;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
     private void fetchData() {
         NetworkClient.getService().getCanteenDetail(canteenId, null, null, null)
                 .enqueue(new Callback<ApiResponse<CanteenDtos.CanteenDetailResponse>>() {

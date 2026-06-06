@@ -4,6 +4,7 @@ import edu.thu.canteen.data.model.Canteen;
 import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.model.UserProfile;
 import java.util.List;
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -57,8 +58,15 @@ public interface ApiService {
     @GET("api/dishes/recommendations")
     Call<ApiResponse<List<Dish>>> getRecommendations(@Query("limit") int limit);
 
+    @GET("api/dishes/tags")
+    Call<ApiResponse<List<String>>> getDishTags();
+
     @POST("api/dishes/submissions")
-    Call<ApiResponse<Void>> submitDishSubmission(@Body DishDtos.DishSubmissionRequest request);
+    Call<ApiResponse<Object>> submitDishSubmission(@Body DishDtos.DishSubmissionRequest request);
+
+    @Multipart
+    @POST("api/uploads/images")
+    Call<ApiResponse<DishDtos.UploadResponse>> uploadImage(@Part MultipartBody.Part file);
 
     // Reviews
     @POST("api/dishes/{dishId}/reviews")
