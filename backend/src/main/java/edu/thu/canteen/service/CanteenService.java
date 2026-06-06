@@ -21,17 +21,20 @@ public class CanteenService {
     private final CanteenMapper canteenMapper;
     private final CanteenWindowMapper windowMapper;
     private final DishMapper dishMapper;
+    private final DishTagMapper dishTagMapper;
     private final ReviewMapper reviewMapper;
     private final CrowdReportMapper crowdReportMapper;
     private final ConsumptionRecordMapper consumptionRecordMapper;
     private final DishViewService dishViewService;
 
     public CanteenService(CanteenMapper canteenMapper, CanteenWindowMapper windowMapper, DishMapper dishMapper,
+                          DishTagMapper dishTagMapper,
                           ReviewMapper reviewMapper, CrowdReportMapper crowdReportMapper,
                           ConsumptionRecordMapper consumptionRecordMapper, DishViewService dishViewService) {
         this.canteenMapper = canteenMapper;
         this.windowMapper = windowMapper;
         this.dishMapper = dishMapper;
+        this.dishTagMapper = dishTagMapper;
         this.reviewMapper = reviewMapper;
         this.crowdReportMapper = crowdReportMapper;
         this.consumptionRecordMapper = consumptionRecordMapper;
@@ -116,10 +119,18 @@ public class CanteenService {
                 .in(Review::getDishId, dishIds).eq(Review::getStatus, "APPROVED"));
         double avg = reviews.stream().mapToInt(Review::getRating).average().orElse(0.0);
         CanteenDtos.CrowdSummary crowd = crowdSummary(canteen.getId());
+        List<String> tags = dishIds.isEmpty() ? List.of() : dishTagMapper.selectList(Wrappers.<DishTag>lambdaQuery()
+                        .in(DishTag::getDishId, dishIds)
+                        .orderByAsc(DishTag::getTag))
+                .stream()
+                .map(DishTag::getTag)
+                .distinct()
+                .limit(6)
+                .toList();
         return new CanteenDtos.CanteenCard(
                 canteen.getId(), canteen.getName(), canteen.getCoverUrl(), canteen.getAddress(),
                 canteen.getOpenHours(), canteen.getPayMethods(), canteen.getOnCampus(),
-                canteen.getLatitude(), canteen.getLongitude(), round(avg), (long) dishes.size(), crowd.level());
+                canteen.getLatitude(), canteen.getLongitude(), round(avg), (long) dishes.size(), crowd.level(), tags);
     }
 
     private CanteenDtos.CrowdSummary crowdSummary(Long canteenId) {

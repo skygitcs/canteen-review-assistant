@@ -42,6 +42,7 @@ public class FoodMapFragment extends Fragment {
     private PhotoView mapPhotoView;
     private FrameLayout markerContainer;
     private ChipGroup tagGroup;
+    private View emptyText;
 
     @Nullable
     @Override
@@ -54,6 +55,7 @@ public class FoodMapFragment extends Fragment {
         mapPhotoView = view.findViewById(R.id.map_photo_view);
         markerContainer = view.findViewById(R.id.marker_container);
         tagGroup = view.findViewById(R.id.map_tag_group);
+        emptyText = view.findViewById(R.id.food_map_empty_text);
 
         EditText searchInput = view.findViewById(R.id.map_search_input);
         RecyclerView canteenList = view.findViewById(R.id.canteen_list);
@@ -200,12 +202,22 @@ public class FoodMapFragment extends Fragment {
             boolean matchesTag = "\u5168\u90e8".equals(activeTag) || (canteen.tags != null && canteen.tags.contains(activeTag));
             boolean matchesQuery = trimmedQuery.isEmpty()
                     || canteen.name.contains(trimmedQuery)
-                    || canteen.address.contains(trimmedQuery);
+                    || canteen.address.contains(trimmedQuery)
+                    || matchesCanteenTag(canteen, trimmedQuery);
             if (matchesTag && matchesQuery) {
                 filtered.add(canteen);
             }
         }
         if (canteenAdapter != null) canteenAdapter.notifyDataSetChanged();
         if (heatAdapter != null) heatAdapter.notifyDataSetChanged();
+        if (emptyText != null) emptyText.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean matchesCanteenTag(Canteen canteen, String trimmedQuery) {
+        if (trimmedQuery.isEmpty() || canteen.tags == null) return false;
+        for (String tag : canteen.tags) {
+            if (tag != null && tag.contains(trimmedQuery)) return true;
+        }
+        return false;
     }
 }
