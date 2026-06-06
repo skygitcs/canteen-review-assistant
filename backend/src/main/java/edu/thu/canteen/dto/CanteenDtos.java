@@ -24,7 +24,8 @@ public final class CanteenDtos {
             BigDecimal longitude,
             Double avgRating,
             Long dishCount,
-            Double crowdLevel
+            Double crowdLevel,
+            List<String> tags
     ) {
     }
 

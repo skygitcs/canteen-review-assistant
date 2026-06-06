@@ -110,6 +110,31 @@ $review = Invoke-Json Post "/api/dishes/$dishId/reviews" @{
 } $headers
 Assert-Ok $review "create review"
 Assert-True ($review.data.rating -eq 5) "review rating mismatch"
+$reviewId = $review.data.id
+
+$upVote = Invoke-Json Post "/api/reviews/$reviewId/vote" @{
+    vote = 1
+} $headers
+Assert-Ok $upVote "up vote"
+Assert-True ($upVote.data.myVote -eq 1) "myVote should be 1 after up vote"
+
+$cancelUpVote = Invoke-Json Post "/api/reviews/$reviewId/vote" @{
+    vote = 1
+} $headers
+Assert-Ok $cancelUpVote "cancel up vote"
+Assert-True ($cancelUpVote.data.myVote -eq 0) "clicking up vote again should cancel vote"
+
+$downVote = Invoke-Json Post "/api/reviews/$reviewId/vote" @{
+    vote = -1
+} $headers
+Assert-Ok $downVote "down vote"
+Assert-True ($downVote.data.myVote -eq -1) "myVote should be -1 after down vote"
+
+$cancelDownVote = Invoke-Json Post "/api/reviews/$reviewId/vote" @{
+    vote = -1
+} $headers
+Assert-Ok $cancelDownVote "cancel down vote"
+Assert-True ($cancelDownVote.data.myVote -eq 0) "clicking down vote again should cancel vote"
 
 $favorite = Invoke-Json Post "/api/users/me/favorites" @{
     dishId = $dishId
@@ -132,6 +157,30 @@ $submission = Invoke-Json Post "/api/dishes/submissions" @{
 } $headers
 Assert-Ok $submission "dish submission"
 Assert-True ($submission.data.auditStatus -eq "PENDING") "submission should be pending"
+
+$adminLogin = Invoke-Json Post "/api/auth/login" @{
+    username = "admin"
+    password = "password"
+}
+Assert-Ok $adminLogin "admin login"
+$adminHeaders = @{ Authorization = "Bearer $($adminLogin.data.token)" }
+
+$adminSubmissions = Invoke-Json Get "/api/admin/submissions?status=PENDING" $null $adminHeaders
+Assert-Ok $adminSubmissions "admin submissions"
+
+$adminReviews = Invoke-Json Get "/api/admin/reviews?status=APPROVED" $null $adminHeaders
+Assert-Ok $adminReviews "admin reviews"
+Assert-True ($adminReviews.data.Count -gt 0) "admin reviews should not be empty"
+
+$rejectedReview = Invoke-Json Post "/api/admin/reviews/$reviewId/reject" @{
+    reason = "Smoke test hide review"
+} $adminHeaders
+Assert-Ok $rejectedReview "admin reject review"
+Assert-True ($rejectedReview.data.status -eq "REJECTED") "review should be rejected"
+
+$approvedReview = Invoke-Json Post "/api/admin/reviews/$reviewId/approve" $null $adminHeaders
+Assert-Ok $approvedReview "admin approve review"
+Assert-True ($approvedReview.data.status -eq "APPROVED") "review should be approved again"
 
 Write-Host "Smoke test passed."
 Write-Host "Temporary user: $username"

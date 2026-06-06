@@ -142,9 +142,10 @@ public class DishService {
         submissionMapper.updateById(submission);
     }
 
-    public List<DishDtos.DishSubmissionView> pendingSubmissions() {
+    public List<DishDtos.DishSubmissionView> submissions(String status) {
+        String normalized = status == null || status.isBlank() ? "PENDING" : status.trim().toUpperCase();
         return submissionMapper.selectList(Wrappers.<DishSubmission>lambdaQuery()
-                .eq(DishSubmission::getAuditStatus, "PENDING")
+                .eq(DishSubmission::getAuditStatus, normalized)
                 .orderByAsc(DishSubmission::getCreatedAt))
                 .stream().map(dishViewService::submissionView).toList();
     }

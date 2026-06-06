@@ -134,7 +134,12 @@ public class CanteenDetailActivity extends AppCompatActivity {
         List<String> floorLabels = new ArrayList<>();
         for (Integer f : sortedFloors) floorLabels.add(f + "\u697c");
         
-        if (floorLabels.isEmpty()) return;
+        if (floorLabels.isEmpty()) {
+            activeFloorLabel = "";
+            dishAdapter.replaceItems(new ArrayList<>());
+            updateEmptyState(true);
+            return;
+        }
 
         // Preserve current selection if possible, otherwise default to first floor
         int selectedIdx = floorLabels.indexOf(activeFloorLabel);
@@ -199,7 +204,7 @@ public class CanteenDetailActivity extends AppCompatActivity {
             boolean matchesFloor = (dish.floorNo == currentFloor);
             boolean matchesWindow = activeWindowName.equals("\u5168\u90e8\u7a97\u53e3") 
                     || (dish.windowName != null && dish.windowName.equals(activeWindowName));
-            boolean matchesQuery = query.isEmpty() || (dish.name != null && dish.name.toLowerCase().contains(query.toLowerCase()));
+            boolean matchesQuery = matchesQuery(dish);
             
             if (matchesFloor && matchesWindow && matchesQuery) {
                 filtered.add(dish);
@@ -207,7 +212,29 @@ public class CanteenDetailActivity extends AppCompatActivity {
         }
         
         dishAdapter.replaceItems(filtered);
+        updateEmptyState(filtered.isEmpty());
         Log.d(TAG, "Filtered dishes: " + filtered.size() + " out of " + allDishes.size());
+    }
+
+    private boolean matchesQuery(Dish dish) {
+        if (query.isEmpty()) return true;
+        String lowerQuery = query.toLowerCase();
+        if (dish.name != null && dish.name.toLowerCase().contains(lowerQuery)) return true;
+        if (dish.windowName != null && dish.windowName.toLowerCase().contains(lowerQuery)) return true;
+        if (dish.description != null && dish.description.toLowerCase().contains(lowerQuery)) return true;
+        if (dish.tags != null) {
+            for (String tag : dish.tags) {
+                if (tag != null && tag.toLowerCase().contains(lowerQuery)) return true;
+            }
+        }
+        return false;
+    }
+
+    private void updateEmptyState(boolean empty) {
+        View emptyText = findViewById(R.id.canteen_empty_text);
+        View dishList = findViewById(R.id.canteen_dish_list);
+        emptyText.setVisibility(empty ? View.VISIBLE : View.GONE);
+        dishList.setVisibility(empty ? View.GONE : View.VISIBLE);
     }
 
     private void reportCrowd() {

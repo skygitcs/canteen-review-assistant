@@ -32,6 +32,24 @@ public final class ReviewDtos {
             String imageUrl,
             Long upVotes,
             Long downVotes,
+            Integer myVote,
+            String status,
+            LocalDateTime createdAt
+    ) {
+    }
+
+    public record AdminReviewView(
+            Long id,
+            Long dishId,
+            String dishName,
+            Long userId,
+            String nickname,
+            Integer rating,
+            String content,
+            String imageUrl,
+            Long upVotes,
+            Long downVotes,
+            String status,
             LocalDateTime createdAt
     ) {
     }
