@@ -38,7 +38,7 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.ViewHo
         Dish item = items.get(position);
         holder.name.setText(item.name);
         holder.canteen.setText(item.canteenName);
-        holder.price.setText(String.format("\u00a5%.2f", item.price));
+        holder.price.setText(UiUtils.formatPrice(item.price));
         UiUtils.loadImage(holder.cover, item.imageUrl, item.id, "dish");
         holder.itemView.setOnClickListener(v -> listener.onClick(item));
         holder.delete.setOnClickListener(v -> listener.onDelete(item));

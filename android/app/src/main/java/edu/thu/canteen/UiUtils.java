@@ -8,6 +8,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
+import edu.thu.canteen.data.network.NetworkClient;
 import java.util.List;
 
 public class UiUtils {
@@ -72,11 +73,24 @@ public class UiUtils {
 
     public static void loadImage(ImageView imageView, String url, long seed, String type) {
         if (url != null && !url.isEmpty()) {
-            Glide.with(imageView.getContext()).load(url).into(imageView);
+            Glide.with(imageView.getContext()).load(resolveMediaUrl(url)).into(imageView);
         } else {
             // Fallback to a high-quality placeholder based on seed and type
             String fallbackUrl = String.format("https://picsum.photos/seed/%s%d/800/600", type, seed);
             Glide.with(imageView.getContext()).load(fallbackUrl).into(imageView);
         }
+    }
+
+    public static String resolveMediaUrl(String url) {
+        if (url == null || url.isEmpty()) return url;
+        if (url.startsWith("http://") || url.startsWith("https://")) return url;
+        String base = NetworkClient.BASE_URL.endsWith("/")
+                ? NetworkClient.BASE_URL.substring(0, NetworkClient.BASE_URL.length() - 1)
+                : NetworkClient.BASE_URL;
+        return url.startsWith("/") ? base + url : base + "/" + url;
+    }
+
+    public static String formatPrice(double price) {
+        return price <= 0 ? "称重计价" : String.format("￥%.2f", price);
     }
 }

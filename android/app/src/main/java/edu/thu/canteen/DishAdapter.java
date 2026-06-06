@@ -39,15 +39,15 @@ public class DishAdapter extends RecyclerView.Adapter<DishAdapter.ViewHolder> {
         Dish item = items.get(position);
         holder.name.setText(item.name);
         holder.window.setText(item.floorNo + "\u697c \u00b7 " + item.windowName);
-        holder.price.setText(String.format("\u00a5%.2f", item.price));
+        holder.price.setText(UiUtils.formatPrice(item.price));
         UiUtils.bindTags(holder.tags, item.tags);
         UiUtils.loadImage(holder.cover, item.imageUrl, item.id, "dish");
         
         // Click cover to zoom
         holder.cover.setOnClickListener(v -> {
             if (v.getContext() instanceof FragmentActivity) {
-                String finalUrl = (item.imageUrl != null && !item.imageUrl.isEmpty()) 
-                    ? item.imageUrl 
+                String finalUrl = (item.imageUrl != null && !item.imageUrl.isEmpty())
+                    ? UiUtils.resolveMediaUrl(item.imageUrl)
                     : String.format("https://picsum.photos/seed/dish%d/800/600", item.id);
                 ImageViewerDialog.show((FragmentActivity) v.getContext(), finalUrl);
             }

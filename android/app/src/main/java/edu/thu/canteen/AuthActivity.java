@@ -28,12 +28,6 @@ public class AuthActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (NetworkClient.getToken() != null) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return;
-        }
-
         setContentView(R.layout.activity_auth);
 
         title = findViewById(R.id.auth_title);

@@ -4,10 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/list_view_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:fillViewport="true"
         android:padding="16dp"
         android:visibility="visible">
 
@@ -21,6 +22,7 @@
                 android:layout_height="wrap_content">
 
                 <TextView
+                    android:id="@+id/food_map_title"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
@@ -97,7 +99,7 @@
                 android:visibility="gone" />
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
     <FrameLayout
         android:id="@+id/map_view_container"
@@ -112,9 +114,6 @@
             android:background="#F3F4F6"
             android:scaleType="centerInside" />
 
-        <!-- Overlay container for markers. In a real app, markers would move with the photo.
-             For a static UI demo, we'll place markers relative to the container for now or just explain.
-             Better yet, we can use a custom view. But for "frontend demo", a simple button works. -->
         <FrameLayout
             android:id="@+id/marker_container"
             android:layout_width="match_parent"

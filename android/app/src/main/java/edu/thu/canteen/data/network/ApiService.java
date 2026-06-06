@@ -58,7 +58,7 @@ public interface ApiService {
     Call<ApiResponse<List<Dish>>> getRecommendations(@Query("limit") int limit);
 
     @POST("api/dishes/submissions")
-    Call<ApiResponse<Void>> submitDishSubmission(@Body Dish dish);
+    Call<ApiResponse<Void>> submitDishSubmission(@Body DishDtos.DishSubmissionRequest request);
 
     // Reviews
     @POST("api/dishes/{dishId}/reviews")

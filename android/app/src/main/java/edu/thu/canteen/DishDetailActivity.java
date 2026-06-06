@@ -91,7 +91,7 @@ public class DishDetailActivity extends AppCompatActivity {
         UiUtils.loadImage(cover, dish.imageUrl, dish.id, "dish");
         cover.setOnClickListener(v -> {
             String finalUrl = (dish.imageUrl != null && !dish.imageUrl.isEmpty()) 
-                ? dish.imageUrl 
+                ? UiUtils.resolveMediaUrl(dish.imageUrl)
                 : String.format("https://picsum.photos/seed/dish%d/800/600", dish.id);
             ImageViewerDialog.show(this, finalUrl);
         });
@@ -99,7 +99,7 @@ public class DishDetailActivity extends AppCompatActivity {
         name.setText(dish.name);
         navTitle.setText(dish.name);
         canteenView.setText(dish.canteenName);
-        price.setText(String.format("\u00a5%.2f", dish.price));
+        price.setText(UiUtils.formatPrice(dish.price));
         description.setText(dish.description);
         UiUtils.bindTags(tags, dish.tags);
     }

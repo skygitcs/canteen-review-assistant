@@ -16,6 +16,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import edu.thu.canteen.data.model.Canteen;
 import edu.thu.canteen.data.model.Dish;
 import edu.thu.canteen.data.network.ApiResponse;
@@ -37,6 +39,7 @@ public class CanteenDetailActivity extends AppCompatActivity {
     // Defaults to first available floor and "All Windows" of that floor
     private String activeFloorLabel = ""; 
     private String activeWindowName = "\u5168\u90e8\u7a97\u53e3";
+    private String activeTag = "\u5168\u90e8";
     private String query = "";
     
     private final List<Dish> allDishes = new ArrayList<>();
@@ -107,6 +110,7 @@ public class CanteenDetailActivity extends AppCompatActivity {
                             allWindowsData.clear();
                             if (detail.windows != null) allWindowsData.addAll(detail.windows);
                             
+                            setupTagFilters();
                             setupFilters();
                         }
                     }
@@ -193,6 +197,38 @@ public class CanteenDetailActivity extends AppCompatActivity {
         applyFilters();
     }
 
+    private void setupTagFilters() {
+        ChipGroup group = findViewById(R.id.dish_tag_filter_group);
+        group.removeAllViews();
+        List<String> tags = new ArrayList<>();
+        tags.add("\u5168\u90e8");
+        for (Dish dish : allDishes) {
+            if (dish.tags == null) continue;
+            for (String tag : dish.tags) {
+                if (tag != null && !tag.isEmpty() && !tags.contains(tag)) tags.add(tag);
+            }
+        }
+        if (!tags.contains(activeTag)) activeTag = "\u5168\u90e8";
+        for (String tag : tags) {
+            Chip chip = new Chip(this);
+            chip.setText(tag);
+            chip.setCheckable(true);
+            chip.setChecked(tag.equals(activeTag));
+            UiUtils.styleTagChip(chip, tag);
+            chip.setOnClickListener(v -> {
+                activeTag = tag;
+                for (int i = 0; i < group.getChildCount(); i++) {
+                    View child = group.getChildAt(i);
+                    if (child instanceof Chip) {
+                        ((Chip) child).setChecked(((Chip) child).getText().toString().equals(activeTag));
+                    }
+                }
+                applyFilters();
+            });
+            group.addView(chip);
+        }
+    }
+
     private void applyFilters() {
         if (dishAdapter == null) return;
         List<Dish> filtered = new ArrayList<>();
@@ -204,9 +240,10 @@ public class CanteenDetailActivity extends AppCompatActivity {
             boolean matchesFloor = (dish.floorNo == currentFloor);
             boolean matchesWindow = activeWindowName.equals("\u5168\u90e8\u7a97\u53e3") 
                     || (dish.windowName != null && dish.windowName.equals(activeWindowName));
+            boolean matchesTag = activeTag.equals("\u5168\u90e8") || (dish.tags != null && dish.tags.contains(activeTag));
             boolean matchesQuery = matchesQuery(dish);
             
-            if (matchesFloor && matchesWindow && matchesQuery) {
+            if (matchesFloor && matchesWindow && matchesTag && matchesQuery) {
                 filtered.add(dish);
             }
         }
