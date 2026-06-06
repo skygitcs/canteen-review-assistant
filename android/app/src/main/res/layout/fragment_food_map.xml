@@ -114,9 +114,6 @@
             android:background="#F3F4F6"
             android:scaleType="centerInside" />
 
-        <!-- Overlay container for markers. In a real app, markers would move with the photo.
-             For a static UI demo, we'll place markers relative to the container for now or just explain.
-             Better yet, we can use a custom view. But for "frontend demo", a simple button works. -->
         <FrameLayout
             android:id="@+id/marker_container"
             android:layout_width="match_parent"
