@@ -185,12 +185,21 @@ public class FormDialogs {
                 .setView(form)
                 .setNegativeButton("\u53d6\u6d88", null)
                 .setPositiveButton("\u63d0\u4ea4", (d, which) -> {
+                    if (data.windows == null || data.windows.isEmpty()) {
+                        UiUtils.toast(context, "\u8be5\u98df\u5802\u66fe\u65e0\u53ef\u7528\u7a97\u53e3\uff0c\u65e0\u6cd5\u63d0\u4ea4");
+                        return;
+                    }
+
                     String name = dishName.getText().toString().trim();
                     if (name.isEmpty()) {
                         UiUtils.toast(context, "\u8bf7\u8f93\u5165\u83dc\u54c1\u540d\u79f0");
                         return;
                     }
                     int windowIdx = windowSpinner.getSelectedItemPosition();
+                    if (windowIdx < 0 || windowIdx >= data.windows.size()) {
+                        UiUtils.toast(context, "\u8bf7\u9009\u62e5\u6709\u6548\u7a97\u53e3");
+                        return;
+                    }
                     CanteenDtos.WindowDto selectedWindow = data.windows.get(windowIdx);
                     double price = 15.0;
                     try { price = Double.parseDouble(priceInput.getText().toString()); } catch (Exception e) {}
@@ -307,18 +316,11 @@ public class FormDialogs {
         renderStars(starViews, rating[0]);
 
         EditText content = input(context, "\u5199\u4e0b\u4f60\u7684\u8bc4\u4ef7");
-        Button upload = softButton(context, "\u4e0a\u4f20\u56fe\u7247");
-        upload.setOnClickListener(v -> {
-            uploadedUrl[0] = "https://picsum.photos/seed/upload" + System.currentTimeMillis() + "/800/600";
-            UiUtils.toast(context, "\u5df2\u6a21\u62df\u4e0a\u4f20\u56fe\u7247");
-            upload.setText("\u2705 \u5df2\u4e0a\u4f20");
-        });
         
         form.addView(title);
         form.addView(ratingLabel);
         form.addView(stars);
         form.addView(content);
-        form.addView(upload);
 
         AlertDialog dialog = new AlertDialog.Builder(context)
                 .setView(form)
@@ -326,7 +328,7 @@ public class FormDialogs {
                 .setPositiveButton("\u53d1\u5e03", (d, which) -> {
                     String text = content.getText().toString().trim();
                     if (text.isEmpty()) text = "\u8fd9\u9053\u83dc\u8fd8\u4e0d\u9519\u3002";
-                    listener.onSubmit(rating[0], text, uploadedUrl[0]);
+                    listener.onSubmit(rating[0], text, null);
                 })
                 .show();
         widen(dialog);
