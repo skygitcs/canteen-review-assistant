@@ -152,3 +152,11 @@ canteen-review-assistant/
 ├── README.md
 └── .gitignore
 ```
+
+## 大作业交付文档
+
+- [实现说明文档](docs/implementation-report.md)
+- [用户手册](docs/user-manual.md)
+- [测试报告](docs/test-report.md)
+- [评分项对照表](docs/scorecard-alignment.md)
+- [最终进度报告](docs/final-progress-report.md)

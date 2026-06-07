@@ -41,7 +41,13 @@ public class MockRepository {
     public static Canteen getRecommendedCanteen() { return CANTEENS.get(0); }
     public static List<Dish> getFeaturedDishes(Canteen c) { return DISHES; }
     public static UserProfile getUserProfile() { return USER_PROFILE; }
-    public static List<Review> getReviewsByDish(long dishId) { return REVIEWS; }
+    public static List<Review> getReviewsByDish(long dishId) {
+        List<Review> filtered = new ArrayList<>();
+        for (Review review : REVIEWS) {
+            if (review.dishId == dishId) filtered.add(review);
+        }
+        return filtered;
+    }
     public static List<Dish> getFavoriteDishes() { return DISHES; }
     public static List<ActivityItem> getRecentActivities() { return new ArrayList<>(); }
     public static List<AdminSubmission> getAdminSubmissions() { return new ArrayList<>(); }

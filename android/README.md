@@ -55,3 +55,20 @@ $env:Path += ";E:\AndroidSDK\platform-tools"
 - 当前主要通过后端 API 获取食堂、菜品、评论、审核等数据。
 - 图片加载使用 Glide，图片地址由后端返回。
 - UI 使用 XML + Material 组件，Tag 会根据含义显示不同颜色。
+
+## 单元测试
+
+Android 端已补充 JVM 单元测试，覆盖模型构造器、DTO 请求/响应对象、统一响应和 mock 数据过滤逻辑。测试入口位于：
+
+```text
+app/src/test/java/edu/thu/canteen/
+```
+
+执行命令：
+
+```powershell
+cd canteen-review-assistant/android
+.\gradlew.bat testDebugUnitTest
+```
+
+如果提示找不到 `gradle-wrapper.jar`，需要先恢复 Gradle wrapper，详见 `../docs/test-report.md`。
