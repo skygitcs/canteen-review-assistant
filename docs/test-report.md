@@ -1,0 +1,126 @@
+# 测试报告
+
+更新时间：2026-06-07
+
+## 1. 测试目标
+
+本轮测试围绕评分表中的数据处理、核心功能、鲁棒性和文档验收需求展开，重点覆盖：
+
+- Android 客户端基础数据模型是否正确保存后端字段、展示字段和审核字段。
+- API 统一响应格式的成功判定、消息和数据载荷是否正确。
+- 认证、食堂、菜品、审核、公告、评价、收藏、补充菜品等 DTO 是否能正确携带提交和响应数据。
+- 原型仓库数据是否能按菜品 ID 返回评论，是否暴露默认用户、筛选项和安全空列表。
+- 人工验收流程是否覆盖登录、食堂浏览、筛选、评论、收藏、补充菜品、管理员审核和公告。
+
+## 2. 自动化测试
+
+新增 Android JVM 单元测试，目录：
+
+```text
+android/app/src/test/java/edu/thu/canteen/
+```
+
+当前共 6 个测试类、16 个测试用例。
+
+测试文件：
+
+| 测试类 | 覆盖内容 |
+| --- | --- |
+| `MockRepositoryTest` | 推荐食堂、按菜品过滤评论、添加菜品后列表同步、默认用户和筛选项、活动/审核/客服空列表 |
+| `DishTest` | 菜品模型字段保存，覆盖评分、评论数、收藏数等展示字段 |
+| `ModelConstructorsTest` | 活动、审核条目、食堂、评价、补充菜品、客服消息、用户资料等模型字段保存 |
+| `ApiResponseTest` | `code == 0` 才视为业务成功，并保留 `message`、`data` |
+| `DishDtosTest` | 评论、投票、收藏、补充菜品请求对象，以及菜品详情、上传响应字段保存 |
+| `AdminAuthCanteenDtosTest` | 管理审核、公告、登录、注册、鉴权响应、食堂详情、窗口、人流、热力点、公告 DTO 字段保存 |
+
+同时修正了 `MockRepository.getReviewsByDish(long dishId)`，现在会按 `dishId` 过滤评论。
+
+## 3. 执行方式
+
+在仓库根目录执行：
+
+```powershell
+cd android
+.\gradlew.bat testDebugUnitTest
+```
+
+如果使用 Android Studio，也可以打开 `android/` 工程后运行 `app` 模块的 Unit Tests。
+
+## 4. 当前执行结果
+
+本机执行命令：
+
+```powershell
+.\gradlew.bat testDebugUnitTest
+```
+
+结果：未进入 Gradle 构建阶段，因此本轮新增单测尚未在当前机器完成实际执行。
+
+原因：
+
+```text
+Error: Unable to access jarfile ...\android\gradle\wrapper\gradle-wrapper.jar
+```
+
+进一步检查结果：
+
+- `android/gradle/wrapper/` 目录当前只有 `gradle-wrapper.properties`。
+- 系统命令行中没有可用的 `gradle` 命令。
+
+因此，本轮已完成测试代码编写，但当前机器缺少 Gradle wrapper jar，自动化测试需要在恢复 wrapper 后执行。恢复方式包括：
+
+- 从 Android Studio 重新生成 Gradle wrapper。
+- 或补回与 `gradle-wrapper.properties` 对应的 `gradle-wrapper.jar`。
+- 或在本机安装 Gradle 后运行同一测试任务。
+
+恢复 wrapper 后建议重新执行：
+
+```powershell
+cd android
+.\gradlew.bat testDebugUnitTest
+```
+
+预期执行范围为 `app/src/test/java/edu/thu/canteen/` 下全部 16 个 JVM 单元测试。
+
+## 5. 人工验收测试用例
+
+| 编号 | 场景 | 步骤 | 期望结果 |
+| --- | --- | --- | --- |
+| M01 | 登录 | 启动后端，使用 `demo/password` 登录 | 登录成功进入主界面 |
+| M02 | 注册 | 输入新用户名、昵称和密码注册 | 注册成功并可登录 |
+| M03 | 首页公告 | 登录后查看首页顶部公告 | 公告正常展示，多条公告自动滚动 |
+| M04 | 推荐食堂 | 点击首页推荐食堂卡片 | 进入对应食堂详情页 |
+| M05 | 全部食堂 | 进入美食广场列表视图 | 显示所有食堂，搜索和标签筛选可用 |
+| M06 | 地图视图 | 切换地图视图并缩放地图 | 地图可缩放，食堂标记随地图位置更新 |
+| M07 | 食堂筛选 | 进入食堂详情，切换楼层、窗口、标签并搜索 | 菜品列表按条件更新，空结果显示空状态 |
+| M08 | 菜品详情 | 点击菜品卡片 | 展示菜品图片、价格、标签、评论和收藏按钮 |
+| M09 | 图片查看 | 点击菜品图片 | 打开大图并支持缩放 |
+| M10 | 评论 | 发布一条评分评论 | 提交成功后评论列表刷新，评分和评论数据同步 |
+| M11 | 点赞点踩 | 对评论点赞、点踩、取消 | 状态和数量按后端结果更新 |
+| M12 | 收藏 | 收藏菜品，再到个人页查看 | 收藏状态更新，个人页显示收藏菜品 |
+| M13 | 补充菜品 | 在食堂详情页提交新菜品 | 提交进入待审核列表，不直接进入正式菜品 |
+| M14 | 管理审核 | 使用 `admin/password` 登录并通过提交 | 审核通过后菜品进入正式列表 |
+| M15 | 异常处理 | 关闭后端后刷新页面或提交操作 | 不崩溃，显示网络错误或失败提示 |
+
+## 6. 后端冒烟测试
+
+后端已有脚本：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend/scripts/smoke-test.ps1
+```
+
+该脚本覆盖健康检查、注册登录、公告、食堂、菜品、推荐、标签、评价、收藏和补充菜品主流程。后端启动且数据库初始化后，应看到：
+
+```text
+Smoke test passed.
+```
+
+## 7. 后续测试建议
+
+后续可继续补充：
+
+- 使用 Robolectric 或 AndroidX Test 覆盖 Activity/Fragment 筛选逻辑和 UI 状态。
+- 使用 MockWebServer 覆盖 Retrofit 网络成功、失败和空数据响应。
+- 使用 Spring Boot 集成测试覆盖后端 Controller 权限、参数校验和审核流。
+- 在 CI 中固定运行 `backend` Maven 测试和 `android` 单元测试。
