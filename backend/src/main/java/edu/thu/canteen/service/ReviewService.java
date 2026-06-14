@@ -13,6 +13,8 @@ import edu.thu.canteen.security.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 public class ReviewService {
     private final DishMapper dishMapper;
@@ -54,9 +56,6 @@ public class ReviewService {
 
     @Transactional
     public ReviewDtos.ReviewView vote(Long reviewId, Integer vote) {
-        if (vote == 0) {
-            throw BusinessException.badRequest("vote must be 1 or -1");
-        }
         Review review = reviewMapper.selectById(reviewId);
         if (review == null || !"APPROVED".equals(review.getStatus())) {
             throw BusinessException.notFound("review not found");
@@ -65,16 +64,54 @@ public class ReviewService {
         ReviewVote existing = voteMapper.selectOne(Wrappers.<ReviewVote>lambdaQuery()
                 .eq(ReviewVote::getReviewId, reviewId)
                 .eq(ReviewVote::getUserId, userId));
+        if (vote == 0) {
+            if (existing != null) {
+                voteMapper.deleteById(existing.getId());
+            }
+            return dishViewService.reviewView(review);
+        }
         if (existing == null) {
             ReviewVote entity = new ReviewVote();
             entity.setReviewId(reviewId);
             entity.setUserId(userId);
             entity.setVote(vote);
             voteMapper.insert(entity);
+        } else if (existing.getVote().equals(vote)) {
+            voteMapper.deleteById(existing.getId());
         } else {
             existing.setVote(vote);
             voteMapper.updateById(existing);
         }
         return dishViewService.reviewView(review);
+    }
+
+    public List<ReviewDtos.AdminReviewView> listForAdmin(String status) {
+        String normalized = status == null || status.isBlank() ? null : status.trim().toUpperCase();
+        return reviewMapper.selectList(Wrappers.<Review>lambdaQuery()
+                        .eq(normalized != null, Review::getStatus, normalized)
+                        .orderByDesc(Review::getCreatedAt))
+                .stream()
+                .map(dishViewService::adminReviewView)
+                .toList();
+    }
+
+    public ReviewDtos.AdminReviewView approve(Long reviewId) {
+        Review review = reviewMapper.selectById(reviewId);
+        if (review == null) {
+            throw BusinessException.notFound("review not found");
+        }
+        review.setStatus("APPROVED");
+        reviewMapper.updateById(review);
+        return dishViewService.adminReviewView(review);
+    }
+
+    public ReviewDtos.AdminReviewView reject(Long reviewId, String reason) {
+        Review review = reviewMapper.selectById(reviewId);
+        if (review == null) {
+            throw BusinessException.notFound("review not found");
+        }
+        review.setStatus("REJECTED");
+        reviewMapper.updateById(review);
+        return dishViewService.adminReviewView(review);
     }
 }

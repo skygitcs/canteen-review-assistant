@@ -66,6 +66,13 @@ public class DishService {
                 .toList();
     }
 
+    public List<String> tags() {
+        return dishTagMapper.selectList(Wrappers.<DishTag>lambdaQuery().orderByAsc(DishTag::getTag)).stream()
+                .map(DishTag::getTag)
+                .distinct()
+                .toList();
+    }
+
     @Transactional
     public DishSubmission submit(DishDtos.DishSubmissionRequest request) {
         if (canteenMapper.selectById(request.canteenId()) == null) {
@@ -135,10 +142,12 @@ public class DishService {
         submissionMapper.updateById(submission);
     }
 
-    public List<DishSubmission> pendingSubmissions() {
+    public List<DishDtos.DishSubmissionView> submissions(String status) {
+        String normalized = status == null || status.isBlank() ? "PENDING" : status.trim().toUpperCase();
         return submissionMapper.selectList(Wrappers.<DishSubmission>lambdaQuery()
-                .eq(DishSubmission::getAuditStatus, "PENDING")
-                .orderByAsc(DishSubmission::getCreatedAt));
+                .eq(DishSubmission::getAuditStatus, normalized)
+                .orderByAsc(DishSubmission::getCreatedAt))
+                .stream().map(dishViewService::submissionView).toList();
     }
 
     private Dish approvedDish(Long dishId) {

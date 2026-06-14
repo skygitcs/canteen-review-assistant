@@ -46,4 +46,25 @@ public final class DishDtos {
             List<@Size(max = 20) String> tags
     ) {
     }
+
+    public record DishSubmissionView(
+            Long id,
+            Long submitterId,
+            String submitterName,
+            Long canteenId,
+            String canteenName,
+            Long windowId,
+            String windowName,
+            Integer floorNo,
+            String name,
+            String imageUrl,
+            BigDecimal price,
+            String description,
+            Integer spiceLevel,
+            List<String> tags,
+            String auditStatus,
+            String auditReason,
+            java.time.LocalDateTime createdAt
+    ) {
+    }
 }

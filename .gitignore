@@ -31,3 +31,5 @@ application-local.yml
 # Generated test / coverage output
 coverage/
 test-output/
+
+todo.md
