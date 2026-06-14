@@ -2,6 +2,8 @@
 
 清华食堂点评助手，课程“移动应用软件开发”大作业项目仓库。
 
+代码仓库地址：[skygitcs/canteen-review-assistant](https://github.com/skygitcs/canteen-review-assistant/)
+
 当前仓库已包含后端服务工程与 Android 客户端原型：
 
 ```text
@@ -28,7 +30,7 @@ canteen-review-assistant/
 
 ### 2. 初始化数据库
 
-进入 MySQL 时建议带上 `utf8mb4`，否则导入中文种子数据可能乱码：
+进入 MySQL 时需要带上 `utf8mb4`，否则导入中文种子数据可能乱码：
 
 ```powershell
 mysql --default-character-set=utf8mb4 -u root -p
@@ -76,13 +78,21 @@ canteen-review-assistant/android
 
 等待 Gradle 同步完成后，选择模拟器或真机运行。
 
-当前 Android 端后端地址使用：
+当前 Android 端默认面向模拟器运行，后端地址使用：
+
+```text
+http://10.0.2.2:8080/
+```
+
+`10.0.2.2` 是 Android 模拟器访问电脑本机服务的地址。后端启动在电脑的 `localhost:8080` 后，模拟器可以通过这个地址访问。
+
+使用真机测试时，将 `NetworkClient.BASE_URL` 改成：
 
 ```text
 http://127.0.0.1:8080/
 ```
 
-真机测试前需要执行端口转发：
+然后在真机测试前执行端口转发：
 
 ```powershell
 adb devices
@@ -96,7 +106,7 @@ adb reverse tcp:8080 tcp:8080
 & "E:\AndroidSDK\platform-tools\adb.exe" reverse tcp:8080 tcp:8080
 ```
 
-模拟器通常也可以配合 `adb reverse` 使用。如果不使用 `adb reverse`，模拟器访问电脑后端常用地址是 `http://10.0.2.2:8080/`，需要在 `NetworkClient.BASE_URL` 中切换。
+也可以把真机和电脑连接到同一网络后，将 `BASE_URL` 改成电脑的局域网 IP，例如 `http://192.168.1.23:8080/`。
 
 ### 5. 演示账号
 
@@ -142,21 +152,38 @@ cd backend
 - 后端：Java 17、Spring Boot 3、Spring Security + JWT、MyBatis-Plus、MySQL
 - Android 端：Java 17、原生 XML 布局、Material Design、Glide、RecyclerView
 
-## 推荐仓库结构
+## 项目结构
 
 ```text
 canteen-review-assistant/
 ├── android/                 # Android 客户端
 ├── backend/                 # 后端服务
-├── docs/                    # 小组汇总文档、报告、截图等，后续可添加
+├── docs/                    # 项目说明、用户手册、测试文档和进度文档
 ├── README.md
 └── .gitignore
 ```
 
 ## 大作业交付文档
 
-- [实现说明文档](docs/implementation-report.md)
-- [用户手册](docs/user-manual.md)
-- [测试报告](docs/test-report.md)
-- [评分项对照表](docs/scorecard-alignment.md)
-- [最终进度报告](docs/final-progress-report.md)
+本次大作业提交材料包含以下部分：
+
+```text
+大作业提交材料/
+├── canteen-review-assistant/     # 本项目代码、数据库脚本和项目文档
+├── 自评表/                        # 小组自评表、评分项说明等
+└── 演示视频/                      # App 演示视频文件
+```
+
+
+本项目仓库内的主要文档如下：
+
+- [说明文档](docs/说明文档.md)：项目背景、功能说明、架构设计和实现概述。
+- [用户手册](docs/用户手册.md)：面向用户和验收演示的使用说明。
+- [测试文档](docs/测试文档.md)：测试环境、测试用例、测试结果和问题记录。
+- [主进度文档](docs/主进度文档.md)：项目整体进度和阶段性工作记录。
+- [前端进度文档](docs/前端进度文档.md)：Android 前端实现过程和界面功能说明。
+- [后端进度文档](docs/后端进度文档.md)：后端开发过程、接口、数据库和联调记录。
+- [前后端接口约定](docs/frontend-api-contract.md)：Android 与后端联调用的接口字段和请求格式。
+- [真实数据导入说明](docs/real-data-seed-guide.md)：真实食堂、菜品、图片和 seed 数据导入说明。
+- [真实菜品数据收集表](docs/canteen-data-collection.xlsx)：小组整理菜品数据时使用的表格。
+- [原型构思草图](docs/原型构思草图.pdf)：项目早期界面结构和功能构思草图。

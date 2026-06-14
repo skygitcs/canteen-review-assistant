@@ -19,10 +19,18 @@
 当前 Android 端的后端地址配置在 `edu.thu.canteen.data.network.NetworkClient`：
 
 ```java
+public static final String BASE_URL = "http://10.0.2.2:8080/";
+```
+
+`10.0.2.2` 是 Android 模拟器访问电脑本机服务的地址。后端启动在电脑的 `localhost:8080` 后，模拟器可以通过 `10.0.2.2:8080` 访问。
+
+使用真机测试时，可以临时把 `BASE_URL` 改为：
+
+```java
 public static final String BASE_URL = "http://127.0.0.1:8080/";
 ```
 
-使用真机测试时，手机里的 `127.0.0.1` 默认指手机自己，不是电脑。需要先用 `adb reverse` 把手机的 8080 端口转发到电脑后端：
+手机里的 `127.0.0.1` 默认指手机自己，不是电脑。改成这个地址后，需要先用 `adb reverse` 把手机的 8080 端口转发到电脑后端：
 
 ```powershell
 adb devices
@@ -71,4 +79,4 @@ cd canteen-review-assistant/android
 .\gradlew.bat testDebugUnitTest
 ```
 
-如果提示找不到 `gradle-wrapper.jar`，需要先恢复 Gradle wrapper，详见 `../docs/test-report.md`。
+如果提示找不到 `gradle-wrapper.jar`，需要先恢复 Gradle wrapper，详见 `../docs/测试文档.md`。
