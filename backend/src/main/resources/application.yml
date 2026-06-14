@@ -23,8 +23,8 @@ mybatis-plus:
 app:
   jwt:
     # Change this before deployment. It must be at least 32 bytes for HS256.
-    secret: thu-canteen-dev-secret-change-me-2026-very-long
-    expiration-minutes: 10080
+    secret: ${JWT_SECRET:thu-canteen-dev-secret-change-me-2026-very-long}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:10080}
 
 springdoc:
   swagger-ui:
